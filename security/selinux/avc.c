@@ -784,6 +784,9 @@ noinline int slow_avc_audit(struct selinux_state *state,
 	if (!is_avc_audit_enable())
 		return 0;
 #endif /* OPLUS_FEATURE_SELINUX_CONTROL_LOG */
+	/* Only log permissive=1 messages for SECURITY_SELINUX_DEVELOP */
+	if (denied && !result)
+		return 0;
 
 	if (!a) {
 		a = &stack_data;

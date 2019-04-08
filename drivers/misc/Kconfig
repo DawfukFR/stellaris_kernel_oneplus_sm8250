@@ -554,7 +554,6 @@ config OPLUS_FEATURE_UID_PERF
 
 config MEMORY_STATE_TIME
 	tristate "Memory freq/bandwidth time statistics"
-	depends on PROFILING
 	help
 	  Memory time statistics exported to /sys/kernel/memory_state_time
 

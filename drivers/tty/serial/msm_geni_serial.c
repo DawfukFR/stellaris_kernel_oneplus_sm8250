@@ -2711,7 +2711,7 @@ static void msm_geni_serial_set_termios(struct uart_port *uport,
 	clk_freq_diff =  (desired_rate - (clk_rate / clk_div));
 	if (clk_freq_diff)
 		UART_LOG_DBG(port->ipc_log_misc, uport->dev,
-			"src_clk freq_diff:%d baud:%d clk_rate:%d clk_div:%d\n",
+			"src_clk freq_diff:%d baud:%d clk_rate:%lu clk_div:%d\n",
 			clk_freq_diff, baud, clk_rate, clk_div);
 
 	uport->uartclk = clk_rate;

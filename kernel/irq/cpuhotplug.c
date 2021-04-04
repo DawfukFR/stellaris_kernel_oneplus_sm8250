@@ -205,7 +205,7 @@ void irq_migrate_all_off_this_cpu(void)
 #else
 		if (affinity_broken) {
 #endif
-			pr_info_ratelimited("IRQ %u: no longer affine to CPU%u\n",
+			pr_debug("IRQ %u: no longer affine to CPU%u\n",
 					    irq, smp_processor_id());
 		}
 	}

@@ -1642,6 +1642,9 @@ struct task_struct {
 #if IS_ENABLED(CONFIG_OPLUS_FEATURE_FDLEAK_CHECK)
 	unsigned int fdleak_flag;
 #endif
+#ifdef CONFIG_ANDROID_SIMPLE_LMK
+	struct task_struct		*simple_lmk_next;
+#endif
 	/* task is frozen/stopped (used by the cgroup freezer) */
 
 	ANDROID_KABI_USE(1, unsigned frozen:1);

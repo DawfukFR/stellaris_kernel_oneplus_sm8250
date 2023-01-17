@@ -455,9 +455,14 @@ struct binder_proc {
 	struct hlist_node deferred_work_node;
 	int deferred_work;
 	bool is_dead;
+	int outstanding_txns;
 #ifdef OPLUS_FEATURE_SCHED_ASSIST
 	int proc_type;
 #endif /* OPLUS_FEATURE_SCHED_ASSIST */
+	bool sync_recv;
+	bool async_recv;
+	bool is_frozen;
+	wait_queue_head_t freeze_wait;
 
 	struct list_head todo;
 	struct binder_stats stats;

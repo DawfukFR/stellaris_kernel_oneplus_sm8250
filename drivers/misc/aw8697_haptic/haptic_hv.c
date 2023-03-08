@@ -2243,7 +2243,7 @@ static void ram_load(const struct firmware *cont, void *context)
 		release_firmware(cont);
 #ifdef AW_READ_BIN_FLEXBALLY
 		if (load_cont <= 20) {
-			schedule_delayed_work(&aw_haptic->ram_work,
+			queue_delayed_work(system_power_efficient_wq, &aw_haptic->ram_work,
 					      msecs_to_jiffies(ram_timer_val));
 			aw_dev_info("%s:start hrtimer:load_cont%d\n",
 				    __func__, load_cont);
@@ -2406,7 +2406,7 @@ static void ram_work_init(struct aw_haptic *aw_haptic)
 
 	aw_dev_info("%s: enter\n", __func__);
 	INIT_DELAYED_WORK(&aw_haptic->ram_work, ram_work_routine);
-	schedule_delayed_work(&aw_haptic->ram_work,
+	queue_delayed_work(system_power_efficient_wq, &aw_haptic->ram_work,
 			      msecs_to_jiffies(ram_timer_val));
 #else
 	ram_update(aw_haptic);

@@ -201,7 +201,7 @@ int oplus_haptic_track_dev_err(uint32_t track_type, uint32_t reg_addr, uint32_t 
 	track_event->dev_event_que[que_rear].err_code = err_code;
 	track_event->que_rear++;
 
-	schedule_delayed_work(&track_event->track_dev_err_load_trigger_work, 0);
+	queue_delayed_work(system_power_efficient_wq, &track_event->track_dev_err_load_trigger_work, 0);
 
 	return TRACK_CMD_ACK_OK;
 }
@@ -224,7 +224,7 @@ int oplus_haptic_track_fre_cail(uint32_t track_type, uint32_t cali_data, uint32_
 	strncpy(track_event->fre_event.fail_info, fail_info, MAX_FAIL_INFO_LEN - 1);
 	track_event->fre_event.fail_info[MAX_FAIL_INFO_LEN - 1] = '\0';
 
-	schedule_delayed_work(&track_event->track_fre_cail_load_trigger_work, 0);
+	queue_delayed_work(system_power_efficient_wq, &track_event->track_fre_cail_load_trigger_work, 0);
 
 	return TRACK_CMD_ACK_OK;
 }
@@ -252,7 +252,7 @@ int oplus_haptic_track_mem_alloc_err(uint32_t track_type, uint32_t alloc_len, co
 	track_event->mem_event_que[que_rear].fun_name[MAX_FUN_NAME_LEN - 1] = '\0';
 	track_event->que_rear++;
 
-	schedule_delayed_work(&track_event->track_mem_alloc_err_load_trigger_work, 0);
+	queue_delayed_work(system_power_efficient_wq, &track_event->track_mem_alloc_err_load_trigger_work, 0);
 
 	return TRACK_CMD_ACK_OK;
 }

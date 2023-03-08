@@ -366,22 +366,6 @@
 				parts = "vbmeta,boot,system,vendor,dtbo,recovery";
 				//#endif /* OPLUS_BUG_STABILITY */
 			};
-
-			fstab {
-				compatible = "android,fstab";
-				vendor {
-					compatible = "android,vendor";
-					dev = "/dev/block/platform/soc/1d84000.ufshc/by-name/vendor";
-					type = "ext4";
-					mnt_flags = "ro,barrier=1,discard";
-					//#ifndef OPLUS_BUG_STABILITY
-					//fsmgr_flags = "wait,slotselect,avb";
-					//#else
-					fsmgr_flags = "wait,avb";
-					//#endif /* OPLUS_BUG_STABILITY */
-					status = "ok";
-				};
-			};
 		};
 	};
 

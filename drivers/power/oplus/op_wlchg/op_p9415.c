@@ -1963,12 +1963,12 @@ static void p9415_connect_int_func(struct work_struct *work)
 		if (wlchg_get_usbin_val() == 1)
 			p9415_set_vbat_en_val(chip, 1);
 		else
-			schedule_delayed_work(&chip->idt_event_int_work, msecs_to_jiffies(500));
+			queue_delayed_work(system_power_efficient_wq, &chip->idt_event_int_work, msecs_to_jiffies(500));
 	}
 	if (p9415_get_idt_con_val(chip) == 1) {
 		pm_stay_awake(chip->dev);
 		cancel_delayed_work_sync(&chip->check_ldo_on_work);
-		schedule_delayed_work(&chip->check_ldo_on_work, p9415_CHECK_LDO_ON_DELAY);
+		queue_delayed_work(system_power_efficient_wq, &chip->check_ldo_on_work, p9415_CHECK_LDO_ON_DELAY);
 		chg_info("schedule delayed 2s work for check ldo on.");
 	} else {
 		pm_relax(chip->dev);
@@ -2000,7 +2000,7 @@ static void p9415_idt_event_shedule_work(void)
 	if (!g_p9415_chip) {
 		pr_err(" p9415_chip is NULL\n");
 	} else {
-		schedule_delayed_work(&g_p9415_chip->idt_event_int_work, 0);
+		queue_delayed_work(system_power_efficient_wq, &g_p9415_chip->idt_event_int_work, 0);
 	}
 }
 
@@ -2014,7 +2014,7 @@ static void p9415_idt_connect_shedule_work(void)
 	if (!g_p9415_chip) {
 		pr_err(" p9415_chip is NULL\n");
 	} else {
-		schedule_delayed_work(&g_p9415_chip->idt_connect_int_work, 0);
+		queue_delayed_work(system_power_efficient_wq, &g_p9415_chip->idt_connect_int_work, 0);
 	}
 }
 
@@ -2268,7 +2268,7 @@ static void p9415_update_work_process(struct work_struct *work)
 		if (rc) {
 			/* run again after interval */
 			retrycount++;
-			schedule_delayed_work(&chip->p9415_update_work, p9415_UPDATE_INTERVAL);
+			queue_delayed_work(system_power_efficient_wq, &chip->p9415_update_work, p9415_UPDATE_INTERVAL);
 			pr_err("update fw failed, retry %d!", retrycount);
 			return;
 		}
@@ -2428,9 +2428,9 @@ static int p9415_driver_probe(struct platform_device *pdev)
 	chip->update_fw_wake_lock = wakeup_source_register(chip->dev, "p9415_update_fw_wake_lock");
 
 	if (get_boot_mode() == MSM_BOOT_MODE__CHARGE) {
-		schedule_delayed_work(&chip->idt_connect_int_work, msecs_to_jiffies(5000));
+		queue_delayed_work(system_power_efficient_wq, &chip->idt_connect_int_work, msecs_to_jiffies(5000));
 	} else {
-		schedule_delayed_work(&chip->p9415_update_work, p9415_UPDATE_INTERVAL);
+		queue_delayed_work(system_power_efficient_wq, &chip->p9415_update_work, p9415_UPDATE_INTERVAL);
 	}
 
 	chg_debug("call end\n");

@@ -834,7 +834,7 @@ static void oplus_comm_check_rechg(struct oplus_chg_comm *chip)
 
 		/* ensure that max_chg_time_sec has been obtained */
 		if (spec->max_chg_time_sec > 0) {
-			schedule_delayed_work(
+			queue_delayed_work(system_power_efficient_wq, 
 				&chip->charge_timeout_work,
 				msecs_to_jiffies(spec->max_chg_time_sec *
 						 1000));
@@ -1345,7 +1345,7 @@ done:
 		 force_down);
 
 	if (update_delay > 0)
-		schedule_delayed_work(&chip->ui_soc_update_work, update_delay);
+		queue_delayed_work(system_power_efficient_wq, &chip->ui_soc_update_work, update_delay);
 }
 
 static void oplus_comm_ui_soc_update_work(struct work_struct *work)
@@ -1509,7 +1509,7 @@ static void oplus_comm_show_ui_soc_decimal(struct work_struct *work)
 		soc_decimal->calculate_decimal_time++;
 		/* update ui_soc */
 		oplus_comm_set_ui_soc(chip, (soc_decimal->ui_soc_integer + soc_decimal->ui_soc_decimal) / 1000);
-		schedule_delayed_work(&chip->ui_soc_decimal_work, msecs_to_jiffies(UPDATE_TIME * 1000));
+		queue_delayed_work(system_power_efficient_wq, &chip->ui_soc_decimal_work, msecs_to_jiffies(UPDATE_TIME * 1000));
 	} else {
 		oplus_comm_ui_soc_decimal_deinit(chip);
 	}
@@ -1580,7 +1580,7 @@ int oplus_comm_switch_ffc(struct oplus_mms *topic)
 	chip->ffc_fv_count = 0;
 	chip->ffc_charging = false;
 	oplus_comm_set_ffc_status(chip, FFC_WAIT);
-	schedule_delayed_work(&chip->ffc_start_work, FFC_START_DELAY);
+	queue_delayed_work(system_power_efficient_wq, &chip->ffc_start_work, FFC_START_DELAY);
 
 	return 0;
 
@@ -1907,7 +1907,7 @@ static void oplus_comm_check_fgreset(struct oplus_chg_comm *chip)
 		return;
 	}
 
-	schedule_delayed_work(&chip->fg_soft_reset_work, 0);
+	queue_delayed_work(system_power_efficient_wq, &chip->fg_soft_reset_work, 0);
 }
 
 static int oplus_comm_charging_disable(struct oplus_chg_comm *chip, bool en)
@@ -2289,7 +2289,7 @@ static void oplus_comm_gauge_check_work(struct work_struct *work)
 	oplus_comm_check_shell_temp(chip, true);
 	oplus_comm_check_temp_region(chip);
 	cancel_delayed_work(&chip->ui_soc_update_work);
-	schedule_delayed_work(&chip->ui_soc_update_work, 0);
+	queue_delayed_work(system_power_efficient_wq, &chip->ui_soc_update_work, 0);
 	oplus_comm_check_battery_status(chip);
 	oplus_comm_check_battery_health(chip);
 	oplus_comm_check_battery_charge_type(chip);
@@ -2332,7 +2332,7 @@ static void oplus_comm_gauge_remuse_work(struct work_struct *work)
 					&data, false);
 		chip->soc = data.intval;
 		cancel_delayed_work_sync(&chip->ui_soc_update_work);
-		schedule_delayed_work(&chip->ui_soc_update_work, 0);
+		queue_delayed_work(system_power_efficient_wq, &chip->ui_soc_update_work, 0);
 	} else {
 		spin_unlock(&chip->remuse_lock);
 	}
@@ -2527,7 +2527,7 @@ static void oplus_comm_subscribe_gauge_topic(struct oplus_mms *topic,
 	}
 	if ((chip->wired_online || chip->wls_online) &&
 	    chip->spec.max_chg_time_sec > 0) {
-		schedule_delayed_work(
+		queue_delayed_work(system_power_efficient_wq, 
 			&chip->charge_timeout_work,
 			msecs_to_jiffies(chip->spec.max_chg_time_sec * 1000));
 	}
@@ -2737,7 +2737,7 @@ static void oplus_comm_plugin_work(struct work_struct *work)
 		cancel_delayed_work_sync(&chip->charge_timeout_work);
 		/* ensure that max_chg_time_sec has been obtained */
 		if (spec->max_chg_time_sec > 0) {
-			schedule_delayed_work(
+			queue_delayed_work(system_power_efficient_wq, 
 				&chip->charge_timeout_work,
 				msecs_to_jiffies(spec->max_chg_time_sec *
 						 1000));
@@ -4068,7 +4068,7 @@ static ssize_t proc_ui_soc_decimal_read(struct file *file,
 		    !chip->wls_online && chip->vooc_online) {
 			cancel_delayed_work_sync(&chip->ui_soc_decimal_work);
 			oplus_comm_ui_soc_decimal_init(chip);
-			schedule_delayed_work(&chip->ui_soc_decimal_work, 0);
+			queue_delayed_work(system_power_efficient_wq, &chip->ui_soc_decimal_work, 0);
 		}
 
 		val = (soc_decimal->ui_soc_integer + soc_decimal->ui_soc_decimal) / 10;
@@ -4448,7 +4448,7 @@ static void oplus_comm_reset_chginfo(struct oplus_chg_comm *chip)
 	cancel_delayed_work_sync(&chip->charge_timeout_work);
 	/* ensure that max_chg_time_sec has been obtained */
 	if (spec->max_chg_time_sec > 0) {
-		schedule_delayed_work(
+		queue_delayed_work(system_power_efficient_wq, 
 			&chip->charge_timeout_work,
 			msecs_to_jiffies(spec->max_chg_time_sec *
 					 1000));
@@ -4827,7 +4827,7 @@ static void oplus_comm_lcd_notify_reg_work(struct work_struct *work)
 		}
 		retry_count++;
 		chg_info("lcd panel not ready, count=%d\n", retry_count);
-		schedule_delayed_work(&chip->lcd_notify_reg_work,
+		queue_delayed_work(system_power_efficient_wq, &chip->lcd_notify_reg_work,
 				      msecs_to_jiffies(LCD_REG_RETRY_DELAY_MS));
 	}
 	retry_count = 0;
@@ -4939,7 +4939,7 @@ static int oplus_comm_driver_probe(struct platform_device *pdev)
 	oplus_mms_wait_topic("vooc", oplus_comm_subscribe_vooc_topic, comm_dev);
 	oplus_mms_wait_topic("wireless", oplus_comm_subscribe_wls_topic, comm_dev);
 
-	schedule_delayed_work(&comm_dev->lcd_notify_reg_work, 0);
+	queue_delayed_work(system_power_efficient_wq, &comm_dev->lcd_notify_reg_work, 0);
 
 	chg_info("probe done\n");
 

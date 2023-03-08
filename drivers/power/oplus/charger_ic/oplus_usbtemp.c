@@ -500,7 +500,7 @@ static int oplus_chg_track_upload_usbtemp_info(
 	index += snprintf(&(chip->usbtemp_load_trigger.crux_info[index]),
 			OPLUS_CHG_TRACK_CURX_INFO_LEN - index, "%s", power_info);
 
-	schedule_delayed_work(&chip->usbtemp_load_trigger_work, 0);
+	queue_delayed_work(system_power_efficient_wq, &chip->usbtemp_load_trigger_work, 0);
 	pr_info("%s\n", chip->usbtemp_load_trigger.crux_info);
 
 	return 0;

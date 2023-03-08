@@ -180,7 +180,7 @@ static void oplus_chg_wls_nor_icl_set_work(struct work_struct *work)
 		if (!wls_nor->wls_dev->wls_status.rx_present) {
 			return;
 		}
-		schedule_delayed_work(&wls_nor->icl_set_work, msecs_to_jiffies(100));
+		queue_delayed_work(system_power_efficient_wq, &wls_nor->icl_set_work, msecs_to_jiffies(100));
 		return;
 	}
 }
@@ -235,7 +235,7 @@ next_step:
 		wls_nor->icl_target_ma = icl_ma;
 		wls_nor->icl_step_ma = step_ma;
 		mutex_unlock(&wls_nor->icl_lock);
-		schedule_delayed_work(&wls_nor->icl_set_work, 0);
+		queue_delayed_work(system_power_efficient_wq, &wls_nor->icl_set_work, 0);
 	}
 
 	return 0;
@@ -307,7 +307,7 @@ static void oplus_chg_wls_nor_fcc_set_work(struct work_struct *work)
 		if (!wls_nor->wls_dev->wls_status.rx_present) {
 			return;
 		}
-		schedule_delayed_work(&wls_nor->fcc_set_work, msecs_to_jiffies(100));
+		queue_delayed_work(system_power_efficient_wq, &wls_nor->fcc_set_work, msecs_to_jiffies(100));
 		return;
 	}
 }
@@ -362,7 +362,7 @@ next_step:
 		wls_nor->fcc_target_ma = fcc_ma;
 		wls_nor->fcc_step_ma = step_ma;
 		mutex_unlock(&wls_nor->fcc_lock);
-		schedule_delayed_work(&wls_nor->fcc_set_work, 0);
+		queue_delayed_work(system_power_efficient_wq, &wls_nor->fcc_set_work, 0);
 	}
 
 	return 0;

@@ -2255,7 +2255,7 @@ static void oplus_chg_track_check_wired_online_work(
 	}
 
 	if (track_status->wired_online_check_count--)
-		schedule_delayed_work(&g_chip->check_wired_online_work,
+		queue_delayed_work(system_power_efficient_wq, &g_chip->check_wired_online_work,
 			msecs_to_jiffies(TRACK_ONLINE_CHECK_T_MS));
 	mutex_unlock(&g_chip->online_hold_lock);
 
@@ -3736,7 +3736,7 @@ int oplus_chg_track_check_wls_charging_break(int wls_connect)
 				oplus_chg_track_record_break_charging_info(
 					track_chip, chip, power_info,
 					track_chip->wls_break_crux_info);
-				schedule_delayed_work(
+				queue_delayed_work(system_power_efficient_wq, 
 					&track_chip
 						 ->wls_charging_break_trigger_work,
 					0);
@@ -3883,7 +3883,7 @@ int oplus_chg_track_check_wired_charging_break(int vbus_rising)
 				oplus_chg_track_record_break_charging_info(
 					track_chip, chip, power_info,
 					track_chip->wired_break_crux_info);
-				schedule_delayed_work(
+				queue_delayed_work(system_power_efficient_wq, 
 					&track_chip->charging_break_trigger_work,
 					0);
 			}
@@ -3908,7 +3908,7 @@ int oplus_chg_track_check_wired_charging_break(int vbus_rising)
 				oplus_chg_track_record_break_charging_info(
 					track_chip, chip, power_info,
 					track_chip->wired_break_crux_info);
-				schedule_delayed_work(
+				queue_delayed_work(system_power_efficient_wq, 
 					&track_chip->charging_break_trigger_work,
 					0);
 			}
@@ -3952,7 +3952,7 @@ int oplus_chg_track_check_wired_charging_break(int vbus_rising)
 		track_status->wired_online_check_stop = false;
 		track_status->wired_online_check_count =
 				TRACK_ONLINE_CHECK_COUNT_THD;
-		schedule_delayed_work(&track_chip->check_wired_online_work, 0);
+		queue_delayed_work(system_power_efficient_wq, &track_chip->check_wired_online_work, 0);
 		mutex_unlock(&track_chip->online_hold_lock);
 		real_chg_type =
 			oplus_chg_track_obtain_wired_break_sub_crux_info(
@@ -4709,9 +4709,9 @@ oplus_chg_track_cal_period_chg_capaticy(struct oplus_chg_track *track_chip)
 		return ret;
 
 	pr_info("enter\n");
-	schedule_delayed_work(&track_chip->cal_chg_five_mins_capacity_work,
+	queue_delayed_work(system_power_efficient_wq, &track_chip->cal_chg_five_mins_capacity_work,
 			      msecs_to_jiffies(TRACK_TIME_5MIN_JIFF_THD));
-	schedule_delayed_work(&track_chip->cal_chg_ten_mins_capacity_work,
+	queue_delayed_work(system_power_efficient_wq, &track_chip->cal_chg_ten_mins_capacity_work,
 			      msecs_to_jiffies(TRACK_TIME_10MIN_JIFF_THD));
 
 	return ret;
@@ -4919,33 +4919,33 @@ static int oplus_chg_need_record(
 		oplus_chg_track_record_charger_info(
 			chip, &track_chip->no_charging_trigger, track_status);
 		if (track_status->power_info.power_type == TRACK_CHG_TYPE_WIRELESS)
-			schedule_delayed_work(
+			queue_delayed_work(system_power_efficient_wq, 
 				&track_chip->no_charging_trigger_work,
 				msecs_to_jiffies(wls_break_work_delay_t));
 		else
-			schedule_delayed_work(
+			queue_delayed_work(system_power_efficient_wq, 
 				&track_chip->no_charging_trigger_work,
 				msecs_to_jiffies(wired_break_work_delay_t));
 	} else if (oplus_chg_track_judge_speed_slow(chip, track_chip)) {
 		oplus_chg_track_record_charger_info(
 			chip, &track_chip->slow_charging_trigger, track_status);
 		if (track_status->power_info.power_type == TRACK_CHG_TYPE_WIRELESS)
-			schedule_delayed_work(
+			queue_delayed_work(system_power_efficient_wq, 
 				&track_chip->slow_charging_trigger_work,
 				msecs_to_jiffies(wls_break_work_delay_t));
 		else
-			schedule_delayed_work(
+			queue_delayed_work(system_power_efficient_wq, 
 				&track_chip->slow_charging_trigger_work,
 				msecs_to_jiffies(wired_break_work_delay_t));
 	} else {
 		oplus_chg_track_record_charger_info(
 			chip, &track_chip->charger_info_trigger, track_status);
 		if (track_status->power_info.power_type == TRACK_CHG_TYPE_WIRELESS)
-			schedule_delayed_work(
+			queue_delayed_work(system_power_efficient_wq, 
 				&track_chip->charger_info_trigger_work,
 				msecs_to_jiffies(wls_break_work_delay_t));
 		else
-			schedule_delayed_work(
+			queue_delayed_work(system_power_efficient_wq, 
 				&track_chip->charger_info_trigger_work,
 				msecs_to_jiffies(wired_break_work_delay_t));
 	}
@@ -5071,7 +5071,7 @@ static int oplus_chg_track_uisoc_soc_jump_check(struct oplus_chg_chip *chip)
 				track_status->pre_vbatt, curr_vbatt,
 				track_status->pre_time_utc, curr_time_utc,
 				chip->charger_exist);
-			schedule_delayed_work(
+			queue_delayed_work(system_power_efficient_wq, 
 				&g_track_chip->uisoc_load_trigger_work,
 				msecs_to_jiffies(10000));
 		}
@@ -5107,7 +5107,7 @@ static int oplus_chg_track_uisoc_soc_jump_check(struct oplus_chg_chip *chip)
 			       track_status->pre_vbatt, curr_vbatt,
 			       track_status->pre_time_utc, curr_time_utc,
 			       chip->charger_exist);
-		schedule_delayed_work(&g_track_chip->soc_trigger_work, 0);
+		queue_delayed_work(system_power_efficient_wq, &g_track_chip->soc_trigger_work, 0);
 	} else {
 		if (track_status->soc_jumped &&
 		    track_status->curr_soc == track_status->pre_soc)
@@ -5135,7 +5135,7 @@ static int oplus_chg_track_uisoc_soc_jump_check(struct oplus_chg_chip *chip)
 			track_status->pre_vbatt, curr_vbatt,
 			track_status->pre_time_utc, curr_time_utc,
 			chip->charger_exist);
-		schedule_delayed_work(&g_track_chip->uisoc_trigger_work, 0);
+		queue_delayed_work(system_power_efficient_wq, &g_track_chip->uisoc_trigger_work, 0);
 	} else {
 		if (track_status->uisoc_jumped &&
 		    track_status->curr_uisoc == track_status->pre_uisoc)
@@ -5167,7 +5167,7 @@ static int oplus_chg_track_uisoc_soc_jump_check(struct oplus_chg_chip *chip)
 			       track_status->pre_vbatt, curr_vbatt,
 			       track_status->pre_time_utc, curr_time_utc,
 			       chip->charger_exist);
-		schedule_delayed_work(&g_track_chip->uisoc_to_soc_trigger_work,
+		queue_delayed_work(system_power_efficient_wq, &g_track_chip->uisoc_to_soc_trigger_work,
 				      0);
 	} else {
 		if (track_status->curr_uisoc == judge_curr_soc) {

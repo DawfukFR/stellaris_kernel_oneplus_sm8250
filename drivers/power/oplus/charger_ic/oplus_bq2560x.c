@@ -1934,7 +1934,7 @@ static void bq2560x_wakeup_vbus_status_check(unsigned int delay_ms)
 {
 	pr_notice("check vbus status after %d ms\n", delay_ms);
 	cancel_delayed_work(&g_bq->bq2560x_check_vbus_status_work);
-	schedule_delayed_work(&g_bq->bq2560x_check_vbus_status_work, round_jiffies_relative(msecs_to_jiffies(delay_ms)));
+	queue_delayed_work(system_power_efficient_wq, &g_bq->bq2560x_check_vbus_status_work, round_jiffies_relative(msecs_to_jiffies(delay_ms)));
 }
 
 static irqreturn_t bq2560x_irq_handler(int irq, void *data)
@@ -2057,7 +2057,7 @@ static irqreturn_t bq2560x_irq_handler(int irq, void *data)
 		bq->oplus_chg_type = POWER_SUPPLY_TYPE_USB_DCP;
 	}
 
-	schedule_delayed_work(&g_bq->bq2560x_aicr_setting_work, msecs_to_jiffies(200));
+	queue_delayed_work(system_power_efficient_wq, &g_bq->bq2560x_aicr_setting_work, msecs_to_jiffies(200));
 
 	if (!ret && prev_chg_type != bq->chg_type) {
 		if ((NONSTANDARD_CHARGER == bq->chg_type) && (!bq->nonstand_retry_bc)) {
@@ -2187,7 +2187,7 @@ int oplus_bq2560x_set_ichg(int cur)
 	ret = bq2560x_set_chargecurrent(g_bq, cur);
 	g_bq->chg_cur = cur;
 	cancel_delayed_work(&g_bq->bq2560x_current_setting_work);
-	schedule_delayed_work(&g_bq->bq2560x_current_setting_work, msecs_to_jiffies(3000));
+	queue_delayed_work(system_power_efficient_wq, &g_bq->bq2560x_current_setting_work, msecs_to_jiffies(3000));
 
 	return ret;
 }
@@ -2441,10 +2441,10 @@ int oplus_bq2560x_set_input_current_limit(int current_ma)
 		ms = (3 - diff.tv_sec)*1000;
 		cancel_delayed_work(&g_bq->bq2560x_aicr_setting_work);
 		pr_info("delayed work %d ms", ms);
-		schedule_delayed_work(&g_bq->bq2560x_aicr_setting_work, msecs_to_jiffies(ms));
+		queue_delayed_work(system_power_efficient_wq, &g_bq->bq2560x_aicr_setting_work, msecs_to_jiffies(ms));
 	} else {
 		cancel_delayed_work(&g_bq->bq2560x_aicr_setting_work);
-		schedule_delayed_work(&g_bq->bq2560x_aicr_setting_work, 0);
+		queue_delayed_work(system_power_efficient_wq, &g_bq->bq2560x_aicr_setting_work, 0);
 	}
 
 	return 0;
@@ -2656,7 +2656,7 @@ int oplus_bq2560x_charger_unsuspend(void)
 		bq2560x_exit_hiz_mode(g_bq);
 	}
 
-	schedule_delayed_work(&g_bq->bq2560x_aicr_setting_work, msecs_to_jiffies(BQ2560X_UNSUSPEND_JIFFIES));
+	queue_delayed_work(system_power_efficient_wq, &g_bq->bq2560x_aicr_setting_work, msecs_to_jiffies(BQ2560X_UNSUSPEND_JIFFIES));
 
 	if (g_oplus_chip) {
 		if (oplus_vooc_get_fastchg_to_normal() == false
@@ -3306,7 +3306,7 @@ static int bq2560x_charger_probe(struct i2c_client *client,
 	first_connect = true;
 	
 	if (strcmp(bq->chg_dev_name, "primary_chg") == 0) {
-		schedule_delayed_work(&bq->init_work, msecs_to_jiffies(14000));
+		queue_delayed_work(system_power_efficient_wq, &bq->init_work, msecs_to_jiffies(14000));
 #ifdef CONFIG_TCPC_CLASS
 		init_completion(&bq->chrdet_start);
 		mutex_init(&bq->attach_lock);

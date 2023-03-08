@@ -2203,7 +2203,7 @@ static irqreturn_t bq2597x_wl_charger_interrupt(int irq, void *dev_id)
 	mutex_unlock(&bq->irq_complete);
 #endif
 	//	power_supply_changed(bq->fc2_psy);
-	schedule_delayed_work(&bq->irq_int_work, 0);
+	queue_delayed_work(system_power_efficient_wq, &bq->irq_int_work, 0);
 
 	return IRQ_HANDLED;
 }
@@ -2226,7 +2226,7 @@ static int show_registers(struct seq_file *m, void *data)
 		if (!ret)
 			seq_printf(m, "Reg[%02X] = 0x%02X\n", addr, val);
 	}
-	//schedule_delayed_work(&get_reg_task_work, round_jiffies_relative(msecs_to_jiffies(500)));
+	//queue_delayed_work(system_power_efficient_wq, &get_reg_task_work, round_jiffies_relative(msecs_to_jiffies(500)));
 	return 0;
 }
 
@@ -2319,7 +2319,7 @@ static void get_reg_task_work_process(struct work_struct *work)
 		bq2597x_wl_enable_charge_pump(true);
 	}
 	cycle_cont++;
-	schedule_delayed_work(&get_reg_task_work,
+	queue_delayed_work(system_power_efficient_wq, &get_reg_task_work,
 			      round_jiffies_relative(msecs_to_jiffies(5000)));
 }
 
@@ -2481,7 +2481,7 @@ static int bq2597x_wl_charger_probe(struct i2c_client *client,
 
 	bq_info("bq2597x_wl probe successfully, Part Num:%d\n!", bq->part_no);
 	INIT_DELAYED_WORK(&get_reg_task_work, get_reg_task_work_process);
-	//schedule_delayed_work(&get_reg_task_work, round_jiffies_relative(msecs_to_jiffies(5000)));
+	//queue_delayed_work(system_power_efficient_wq, &get_reg_task_work, round_jiffies_relative(msecs_to_jiffies(5000)));
 	bq_pump = bq;
 	exchgpump_information_register(bq);
 	return 0;

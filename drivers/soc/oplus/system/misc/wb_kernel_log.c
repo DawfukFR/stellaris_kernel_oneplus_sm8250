@@ -101,7 +101,7 @@ out:
 	if (log_tar_filp != NULL)
 		filp_close(log_tar_filp, NULL);
 	if (stop_size == 0)
-		schedule_delayed_work(&wb_workq, HZ/10);
+		queue_delayed_work(system_power_efficient_wq, &wb_workq, HZ/10);
 	else {
 		cancel_delayed_work(&wb_workq);
 		pr_info("[Op_kernel_log] Stop write back from work queue\n");
@@ -112,7 +112,7 @@ static int kernel_log_wb_int(void)
 {
 	pr_info("[Op_kernel_log] Start init\n");
 	INIT_DELAYED_WORK(&wb_workq, wb_workqueue_handler);
-	schedule_delayed_work(&wb_workq, HZ/10);
+	queue_delayed_work(system_power_efficient_wq, &wb_workq, HZ/10);
 	pr_info("[Op_kernel_log] End init\n");
 	return 0;
 }

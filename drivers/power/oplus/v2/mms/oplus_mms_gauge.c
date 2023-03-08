@@ -952,7 +952,7 @@ static void oplus_mms_gauge_init_work(struct work_struct *work)
 	if (chip->gauge_ic == NULL) {
 		if (retry > 0) {
 			retry--;
-			schedule_delayed_work(&chip->hal_gauge_init_work,
+			queue_delayed_work(system_power_efficient_wq, &chip->hal_gauge_init_work,
 				msecs_to_jiffies(OPLUS_CHG_IC_INIT_RETRY_DELAY));
 			return;
 		} else {
@@ -966,7 +966,7 @@ static void oplus_mms_gauge_init_work(struct work_struct *work)
 	if (rc == -EAGAIN) {
 		if (retry > 0) {
 			retry--;
-			schedule_delayed_work(&chip->hal_gauge_init_work,
+			queue_delayed_work(system_power_efficient_wq, &chip->hal_gauge_init_work,
 				msecs_to_jiffies(OPLUS_CHG_IC_INIT_RETRY_DELAY));
 			return;
 		} else {
@@ -2050,7 +2050,7 @@ static int oplus_mms_gauge_probe(struct platform_device *pdev)
 	INIT_WORK(&chip->update_change_work, oplus_mms_gauge_update_change_work);
 	INIT_WORK(&chip->gauge_update_work, oplus_mms_gauge_gauge_update_work);
 
-	schedule_delayed_work(&chip->hal_gauge_init_work, 0);
+	queue_delayed_work(system_power_efficient_wq, &chip->hal_gauge_init_work, 0);
 
 	chg_info("probe success\n");
 	return 0;

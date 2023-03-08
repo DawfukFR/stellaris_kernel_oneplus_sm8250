@@ -562,7 +562,7 @@ static void wakelock_printk(struct work_struct *w)
 		return ;
 
 	if (wakelock_printk_repeat)
-		schedule_delayed_work(dwork, msecs_to_jiffies(wakelock_printk_interval_ms));
+		queue_delayed_work(system_power_efficient_wq, dwork, msecs_to_jiffies(wakelock_printk_interval_ms));
 }
 static DECLARE_DELAYED_WORK(wakelock_printk_work, wakelock_printk);
 
@@ -570,7 +570,7 @@ static void wakelock_printk_control(int on)
 {
 	if (on) {
 		wakelock_printk_repeat = 1;
-		schedule_delayed_work(&wakelock_printk_work,
+		queue_delayed_work(system_power_efficient_wq, &wakelock_printk_work,
 			msecs_to_jiffies(wakelock_printk_interval_ms));
 	} else {
 		wakelock_printk_repeat = 0;

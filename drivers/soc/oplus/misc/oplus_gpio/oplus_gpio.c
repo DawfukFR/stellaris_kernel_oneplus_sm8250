@@ -237,7 +237,7 @@ static int dual_sim_det_show(struct seq_file *m, void *v)
 		if (esim_status == 1) {
 			/* uim2 switch to esim after 4 seconds */
 			INIT_DELAYED_WORK(&recover_work, dual_sim_det_uim2_to_esim);
-			schedule_delayed_work(&recover_work, msecs_to_jiffies(4100));
+			queue_delayed_work(system_power_efficient_wq, &recover_work, msecs_to_jiffies(4100));
 		}
 
 		seq_printf(m, "%d\n", det_info->gpio_status);

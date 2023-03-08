@@ -1256,7 +1256,7 @@ end:
 
 reschedule:
 	pr_err("reschedule after 1s\n");
-	schedule_delayed_work(&chip->chg_remove_work,
+	queue_delayed_work(system_power_efficient_wq, &chip->chg_remove_work,
 				msecs_to_jiffies(SECOND_CHECK_DELAY));
 }
 */

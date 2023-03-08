@@ -4039,7 +4039,7 @@ static int pd_tcp_notifier_call(struct notifier_block *pnb,
 				oplus_ccdetect_disable();
 		}
 
-		schedule_delayed_work(&wd0_detect_work, msecs_to_jiffies(CCDETECT_DELAY_MS));
+		queue_delayed_work(system_power_efficient_wq, &wd0_detect_work, msecs_to_jiffies(CCDETECT_DELAY_MS));
 
 		if (g_oplus_chip) {
 			power_supply_changed(g_oplus_chip->usb_psy);
@@ -4847,7 +4847,7 @@ void oplus_ccdetect_work(struct work_struct *work)
 		if (oplus_get_otg_switch_status() == false)
 			oplus_ccdetect_disable();
 		if(g_oplus_chip->usb_status == USB_TEMP_HIGH) {
-			schedule_delayed_work(&usbtemp_recover_work, 0);
+			queue_delayed_work(system_power_efficient_wq, &usbtemp_recover_work, 0);
 		}
 	}
 }
@@ -4871,11 +4871,11 @@ void oplus_wd0_detect_work(struct work_struct *work)
 		chip->usbtemp_check = oplus_usbtemp_condition();
 
 		if (chip->usb_status == USB_TEMP_HIGH) {
-			schedule_delayed_work(&usbtemp_recover_work, 0);
+			queue_delayed_work(system_power_efficient_wq, &usbtemp_recover_work, 0);
 		}
 	}
 
-	/*schedule_delayed_work(&wd0_detect_work, msecs_to_jiffies(CCDETECT_DELAY_MS));*/
+	/*queue_delayed_work(system_power_efficient_wq, &wd0_detect_work, msecs_to_jiffies(CCDETECT_DELAY_MS));*/
 }
 
 void oplus_otg_enable_by_buckboost(void)
@@ -4917,7 +4917,7 @@ irqreturn_t oplus_ccdetect_change_handler(int irq, void *data)
 	cancel_delayed_work_sync(&ccdetect_work);
 	/* smblib_dbg(chg, PR_INTERRUPT, "Scheduling ccdetect work\n"); */
 	printk(KERN_ERR "[OPLUS_CHG][%s]: Scheduling ccdetect work!\n", __func__);
-	schedule_delayed_work(&ccdetect_work,
+	queue_delayed_work(system_power_efficient_wq, &ccdetect_work,
 			msecs_to_jiffies(CCDETECT_DELAY_MS));
 	return IRQ_HANDLED;
 }
@@ -5964,7 +5964,7 @@ static void oplus_chg_wls_status_keep_clean_work(struct work_struct *work)
 	} else {
 		if (chip->wls_status_keep == WLS_SK_BY_HAL) {
 			chip->wls_status_keep = WLS_SK_WAIT_TIMEOUT;
-			schedule_delayed_work(&info->status_keep_clean_work, msecs_to_jiffies(5000));
+			queue_delayed_work(system_power_efficient_wq, &info->status_keep_clean_work, msecs_to_jiffies(5000));
 			return;
 		}
 
@@ -6014,12 +6014,12 @@ static void oplus_chg_wls_status_keep_clean_work(struct work_struct *work)
 				pre_wls_online = pval->intval;
 				chip->wls_status_keep = WLS_SK_BY_KERNEL;
 				pval->intval = 1;
-				schedule_delayed_work(&info->status_keep_clean_work, msecs_to_jiffies(KEEP_CLEAN_INTERVAL));
+				queue_delayed_work(system_power_efficient_wq, &info->status_keep_clean_work, msecs_to_jiffies(KEEP_CLEAN_INTERVAL));
 			} else {
 				pre_wls_online = pval->intval;
 				if (info->status_wake_lock_on) {
 					cancel_delayed_work_sync(&info->status_keep_clean_work);
-					schedule_delayed_work(&info->status_keep_clean_work, 0);
+					queue_delayed_work(system_power_efficient_wq, &info->status_keep_clean_work, 0);
 				}
 			}
 		}
@@ -7357,7 +7357,7 @@ static int mtk_charger_probe(struct platform_device *pdev)
 		}
 
 		if (level <= 0) {
-			schedule_delayed_work(&ccdetect_work, msecs_to_jiffies(6000));
+			queue_delayed_work(system_power_efficient_wq, &ccdetect_work, msecs_to_jiffies(6000));
 		}
 
 		printk(KERN_ERR "[OPLUS_CHG][%s]: ccdetect_gpio ..level[%d]  \n", __func__, level);

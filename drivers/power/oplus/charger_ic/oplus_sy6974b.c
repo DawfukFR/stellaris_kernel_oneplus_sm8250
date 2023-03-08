@@ -1974,7 +1974,7 @@ static void sy6974b_start_bc12_retry(struct chip_sy6974b *chip) {
 
 	sy6974b_set_iindet();
 	if (chip->is_sy6974b) {
-		schedule_delayed_work(&chip->bc12_retry_work, msecs_to_jiffies(100));
+		queue_delayed_work(system_power_efficient_wq, &chip->bc12_retry_work, msecs_to_jiffies(100));
 	}
 }
 
@@ -2383,9 +2383,9 @@ static int sy6974b_charger_probe(struct i2c_client *client,
 #else
 	if (MSM_BOOT_MODE__NORMAL == get_boot_mode())
 #endif
-		schedule_delayed_work(&chip->init_work, msecs_to_jiffies(chip->normal_init_delay_ms));
+		queue_delayed_work(system_power_efficient_wq, &chip->init_work, msecs_to_jiffies(chip->normal_init_delay_ms));
 	else
-		schedule_delayed_work(&chip->init_work, msecs_to_jiffies(chip->other_init_delay_ms));
+		queue_delayed_work(system_power_efficient_wq, &chip->init_work, msecs_to_jiffies(chip->other_init_delay_ms));
 
 	if (oplus_daily_build()
 			|| get_eng_version() == HIGH_TEMP_AGING

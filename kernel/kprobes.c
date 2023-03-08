@@ -561,7 +561,7 @@ static void do_free_cleaned_kprobes(void)
 /* Start optimizer after OPTIMIZE_DELAY passed */
 static void kick_kprobe_optimizer(void)
 {
-	schedule_delayed_work(&optimizing_work, OPTIMIZE_DELAY);
+	queue_delayed_work(system_power_efficient_wq, &optimizing_work, OPTIMIZE_DELAY);
 }
 
 /* Kprobe jump optimizer */

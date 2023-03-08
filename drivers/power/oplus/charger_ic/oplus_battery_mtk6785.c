@@ -1454,7 +1454,7 @@ void mtk_charger_int_handler(void)
 			pinfo->step_cnt = 0;
 			pinfo->step_chg_current = pinfo->data.step1_current_ma;
 			charger_dev_set_input_current(g_oplus_chip->chgic_mtk.oplus_info->chg1_dev, 500000);
-			schedule_delayed_work(&pinfo->step_charging_work, msecs_to_jiffies(5000));
+			queue_delayed_work(system_power_efficient_wq, &pinfo->step_charging_work, msecs_to_jiffies(5000));
 		} else {
 			pr_err("%s, Charger Plug Out\n", __func__);
 			charger_dev_set_input_current(g_oplus_chip->chgic_mtk.oplus_info->chg1_dev, 500000);
@@ -5277,7 +5277,7 @@ void oplus_ccdetect_work(struct work_struct *work)
 		if (oplus_get_otg_switch_status() == false)
 			oplus_ccdetect_disable();
 		if(g_oplus_chip->usb_status == USB_TEMP_HIGH) {
-			schedule_delayed_work(&usbtemp_recover_work, 0);
+			queue_delayed_work(system_power_efficient_wq, &usbtemp_recover_work, 0);
 		}
 	}
 
@@ -5308,7 +5308,7 @@ irqreturn_t oplus_ccdetect_change_handler(int irq, void *data)
 	cancel_delayed_work_sync(&ccdetect_work);
 	//smblib_dbg(chg, PR_INTERRUPT, "Scheduling ccdetect work\n");
     printk(KERN_ERR "[OPLUS_CHG][%s]: Scheduling ccdetect work!\n", __func__);
-	schedule_delayed_work(&ccdetect_work,
+	queue_delayed_work(system_power_efficient_wq, &ccdetect_work,
 			msecs_to_jiffies(CCDETECT_DELAY_MS));
 	return IRQ_HANDLED;
 }
@@ -6406,7 +6406,7 @@ static void mt6360_step_charging_work(struct work_struct *work)
 			}
 		}
 
-		schedule_delayed_work(&pinfo->step_charging_work, msecs_to_jiffies(5000));
+		queue_delayed_work(system_power_efficient_wq, &pinfo->step_charging_work, msecs_to_jiffies(5000));
 	}
 
 	return;

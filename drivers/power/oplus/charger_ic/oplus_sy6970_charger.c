@@ -1169,7 +1169,7 @@ static irqreturn_t bq2589x_irq_handler(int irq, void *data)
 		&& (bq->vbus_type == BQ2589X_VBUS_TYPE_DCP)
 		&& !bq->retry_hvdcp_algo && bq->chg_det_enable) {
 //		bq->retry_hvdcp_algo = true;
-//		schedule_delayed_work(&g_bq->bq2589x_retry_adapter_detection, msecs_to_jiffies(3000));
+//		queue_delayed_work(system_power_efficient_wq, &g_bq->bq2589x_retry_adapter_detection, msecs_to_jiffies(3000));
 	}
 
 	return IRQ_HANDLED;
@@ -2000,7 +2000,7 @@ int oplus_bq2589x_set_ichg(int cur)
 				chip->sub_chg_ops->charging_current_write_fast(600);
 				g_bq->chg_cur = cur;
 				cancel_delayed_work(&g_bq->bq2589x_current_setting_work);
-				schedule_delayed_work(&g_bq->bq2589x_current_setting_work, msecs_to_jiffies(5000));
+				queue_delayed_work(system_power_efficient_wq, &g_bq->bq2589x_current_setting_work, msecs_to_jiffies(5000));
 			}
 		}
 	}
@@ -2383,10 +2383,10 @@ int oplus_bq2589x_set_input_current_limit(int current_ma)
 		ms = (3 - diff.tv_sec)*1000;
 		cancel_delayed_work(&g_bq->bq2589x_aicr_setting_work);
 		dev_info(g_bq->dev, "delayed work %d ms", ms);
-		schedule_delayed_work(&g_bq->bq2589x_aicr_setting_work, msecs_to_jiffies(ms));
+		queue_delayed_work(system_power_efficient_wq, &g_bq->bq2589x_aicr_setting_work, msecs_to_jiffies(ms));
 	} else {
 		cancel_delayed_work(&g_bq->bq2589x_aicr_setting_work);
-		schedule_delayed_work(&g_bq->bq2589x_aicr_setting_work, 0);
+		queue_delayed_work(system_power_efficient_wq, &g_bq->bq2589x_aicr_setting_work, 0);
 	}
 
 	return 0;
@@ -2964,7 +2964,7 @@ static void aicr_setting_work_callback(struct work_struct *work)
 	oplus_bq2589x_set_aicr(g_bq->aicr);
 
 	if(g_oplus_chip->batt_full != true)
-		schedule_delayed_work(&g_bq->bq2589x_aicr_setting_work, msecs_to_jiffies(10000));
+		queue_delayed_work(system_power_efficient_wq, &g_bq->bq2589x_aicr_setting_work, msecs_to_jiffies(10000));
 }
 
 static void charging_current_setting_work(struct work_struct *work)
@@ -3099,7 +3099,7 @@ static int bq2589x_charger_probe(struct i2c_client *client,
 		goto err_sysfs_create;
 	}
 
-	schedule_delayed_work(&g_bq->bq2589x_retry_adapter_detection, msecs_to_jiffies(3000));
+	queue_delayed_work(system_power_efficient_wq, &g_bq->bq2589x_retry_adapter_detection, msecs_to_jiffies(3000));
 	determine_initial_status(bq);
 
 	set_charger_ic(BQ2589X);

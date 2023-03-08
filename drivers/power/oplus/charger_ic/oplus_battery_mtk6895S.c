@@ -5343,7 +5343,7 @@ static int pd_tcp_notifier_call(struct notifier_block *pnb,
 		}
 
 		if (wd0_detect_work.work.func) {
-			schedule_delayed_work(&wd0_detect_work, msecs_to_jiffies(CCDETECT_DELAY_MS));
+			queue_delayed_work(system_power_efficient_wq, &wd0_detect_work, msecs_to_jiffies(CCDETECT_DELAY_MS));
 		} else {
 			pr_err("%s wd0_detect_work.work.func is NULL\n", __func__);
 		}
@@ -6336,7 +6336,7 @@ void oplus_ccdetect_work(struct work_struct *work)
 		if (oplus_get_otg_switch_status() == false)
 			oplus_ccdetect_disable();
 		if(g_oplus_chip->usb_status == USB_TEMP_HIGH) {
-			schedule_delayed_work(&usbtemp_recover_work, 0);
+			queue_delayed_work(system_power_efficient_wq, &usbtemp_recover_work, 0);
 		}
 	}
 
@@ -6355,13 +6355,13 @@ void oplus_wd0_detect_work(struct work_struct *work)
 
 		if (g_oplus_chip->usb_status == USB_TEMP_HIGH) {
 			if (usbtemp_recover_work.work.func) {
-				schedule_delayed_work(&usbtemp_recover_work, 0);
+				queue_delayed_work(system_power_efficient_wq, &usbtemp_recover_work, 0);
 			}
 		}
 		oplus_chg_clear_abnormal_adapter_var();
 	}
 
-	/*schedule_delayed_work(&wd0_detect_work, msecs_to_jiffies(CCDETECT_DELAY_MS));*/
+	/*queue_delayed_work(system_power_efficient_wq, &wd0_detect_work, msecs_to_jiffies(CCDETECT_DELAY_MS));*/
 
 }
 
@@ -6379,7 +6379,7 @@ void oplus_wd0_get_status_work(struct work_struct *work)
 		}
 
 		if (wd0_detect_work.work.func) {
-			schedule_delayed_work(&wd0_detect_work, msecs_to_jiffies(CCDETECT_DELAY_MS));
+			queue_delayed_work(system_power_efficient_wq, &wd0_detect_work, msecs_to_jiffies(CCDETECT_DELAY_MS));
 		}
 
 		if (g_oplus_chip) {
@@ -6414,7 +6414,7 @@ irqreturn_t oplus_ccdetect_change_handler(int irq, void *data)
 	cancel_delayed_work_sync(&ccdetect_work);
 	//smblib_dbg(chg, PR_INTERRUPT, "Scheduling ccdetect work\n");
     printk(KERN_ERR "[OPLUS_CHG][%s]: Scheduling ccdetect work!\n", __func__);
-	schedule_delayed_work(&ccdetect_work,
+	queue_delayed_work(system_power_efficient_wq, &ccdetect_work,
 			msecs_to_jiffies(CCDETECT_DELAY_MS));
 	return IRQ_HANDLED;
 }
@@ -7253,7 +7253,7 @@ int oplus_chg_set_qc_config_forvoocphy(void)
 #endif
 		/*check if the QC can be changed from 5v to 9V.*/
 		cancel_delayed_work_sync(&hvdcp_detect_work);
-		schedule_delayed_work(&hvdcp_detect_work, msecs_to_jiffies(1000));
+		queue_delayed_work(system_power_efficient_wq, &hvdcp_detect_work, msecs_to_jiffies(1000));
 		ret = 0;
 	} else {
 		if (chip->charger_volt > 7500 &&
@@ -7312,7 +7312,7 @@ int oplus_chg_set_qc_config_forsvooc(void)
 
 		/*check if the QC can be changed from 5v to 9V.*/
 		cancel_delayed_work_sync(&hvdcp_detect_work);
-		schedule_delayed_work(&hvdcp_detect_work, msecs_to_jiffies(1000));
+		queue_delayed_work(system_power_efficient_wq, &hvdcp_detect_work, msecs_to_jiffies(1000));
 		ret = 0;
 	} else {
 		if (chip->charger_volt > 7500 &&
@@ -8374,7 +8374,7 @@ static int mtk_charger_probe(struct platform_device *pdev)
 		}
 
 		if (level <= 0) {
-			schedule_delayed_work(&ccdetect_work, msecs_to_jiffies(6000));
+			queue_delayed_work(system_power_efficient_wq, &ccdetect_work, msecs_to_jiffies(6000));
 		}
 
 		printk(KERN_ERR "[OPLUS_CHG][%s]: ccdetect_gpio ..level[%d]  \n", __func__, level);
@@ -8404,7 +8404,7 @@ static int mtk_charger_probe(struct platform_device *pdev)
 
 	mtk_chg_enable_vbus_ovp(true);
 	if (wd0_get_status_work.work.func) {
-		schedule_delayed_work(&wd0_get_status_work, msecs_to_jiffies(WD0_GET_STATUS_DELAY_MS));
+		queue_delayed_work(system_power_efficient_wq, &wd0_get_status_work, msecs_to_jiffies(WD0_GET_STATUS_DELAY_MS));
 	}
 #endif
 

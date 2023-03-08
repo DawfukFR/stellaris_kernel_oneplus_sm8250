@@ -1351,7 +1351,7 @@ static void ra9530_commu_data_process(struct oplus_ra9530_ic *chip)
 		chip->present = 1;
 		notify_pen_state(true, 0);
 		check_int_enable(chip);
-		schedule_delayed_work(&chip->check_point_dwork, round_jiffies_relative(msecs_to_jiffies(RA9530_CHECK_SS_INT_TIME)));
+		queue_delayed_work(system_power_efficient_wq, &chip->check_point_dwork, round_jiffies_relative(msecs_to_jiffies(RA9530_CHECK_SS_INT_TIME)));
 		chg_err("ra9530 ss int ,present value :%d.\n", chip->present);
 	}
 
@@ -1413,7 +1413,7 @@ static void ra9530_idt_event_int_func(struct work_struct *work)
 
 static irqreturn_t irq_idt_event_int_handler(int irq, void *dev_id)
 {
-	schedule_delayed_work(&ra9530_chip->idt_event_int_work, msecs_to_jiffies(0));
+	queue_delayed_work(system_power_efficient_wq, &ra9530_chip->idt_event_int_work, msecs_to_jiffies(0));
 	return IRQ_HANDLED;
 }
 
@@ -1831,7 +1831,7 @@ static void ra9530_do_switch(struct oplus_ra9530_ic *chip, uint8_t status)
 		do_gettimeofday(&now_time);
 		chip->tx_start_time = now_time.tv_sec * 1000 + now_time.tv_usec / 1000;
 		schedule_work(&ra9530_idt_timer_work);
-		schedule_delayed_work(&chip->power_check_work, \
+		queue_delayed_work(system_power_efficient_wq, &chip->power_check_work, \
 						round_jiffies_relative(msecs_to_jiffies(chip->power_expired_time * MIN_TO_MS)));
 	} else if (status == PEN_STATUS_FAR) {/* hall far, power off */
 		ra9530_power_enable(chip, false);
@@ -1933,7 +1933,7 @@ static void ra9530_enable_func(struct work_struct *work)
 	chip->tx_start_time = now_time.tv_sec * 1000 + now_time.tv_usec / 1000;
 	schedule_work(&ra9530_idt_timer_work);
 	cancel_delayed_work(&chip->power_check_work);
-	schedule_delayed_work(&chip->power_check_work, \
+	queue_delayed_work(system_power_efficient_wq, &chip->power_check_work, \
 			round_jiffies_relative(msecs_to_jiffies(chip->power_expired_time * MIN_TO_MS)));
 
 OUT:
@@ -2161,7 +2161,7 @@ static void ra9530_update_work_process(struct work_struct *work)
 	rc = ra9530_check_idt_fw_update(chip, false);
 	if (rc == ERR_NUM) {
 		/* run again after interval */
-		schedule_delayed_work(&chip->ra9530_update_work, RA9530_UPDATE_RETRY_INTERVAL);
+		queue_delayed_work(system_power_efficient_wq, &chip->ra9530_update_work, RA9530_UPDATE_RETRY_INTERVAL);
 	}
 }
 
@@ -2630,7 +2630,7 @@ static int ra9530_driver_probe(struct i2c_client *client, const struct i2c_devic
 	ra9530_chip = chip;
 	mutex_init(&chip->flow_mutex);
 
-	schedule_delayed_work(&chip->ra9530_update_work, RA9530_UPDATE_INTERVAL);
+	queue_delayed_work(system_power_efficient_wq, &chip->ra9530_update_work, RA9530_UPDATE_INTERVAL);
 	rc = wireless_register_notify(&ra9530_notifier);
 	if (rc < 0) {
 		chg_err("blocking_notifier_chain_register error");

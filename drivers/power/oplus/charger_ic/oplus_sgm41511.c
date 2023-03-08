@@ -1677,7 +1677,7 @@ static void sgm41511_bc12_retry_work(struct work_struct *work)
 			sgm41511_get_bc12(chip);
 		} else {
 			chg_err("BC1.2 not complete delay 50ms,delay_cnt=%d\n", chip->bc12_delay_cnt);
-			schedule_delayed_work(&chip->bc12_retry_work, round_jiffies_relative(msecs_to_jiffies(50)));
+			queue_delayed_work(system_power_efficient_wq, &chip->bc12_retry_work, round_jiffies_relative(msecs_to_jiffies(50)));
 		}
 	}
 }
@@ -1688,7 +1688,7 @@ static void sgm41511_start_bc12_retry(struct chip_sgm41511 *chip) {
 
 	sgm41511_set_iindet();
 	if (chip->is_sgm41511) {
-		schedule_delayed_work(&chip->bc12_retry_work, round_jiffies_relative(msecs_to_jiffies(100)));
+		queue_delayed_work(system_power_efficient_wq, &chip->bc12_retry_work, round_jiffies_relative(msecs_to_jiffies(100)));
 	}
 }
 

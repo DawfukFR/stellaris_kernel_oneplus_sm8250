@@ -611,7 +611,7 @@ int oplus_chg_track_parallel_mos_error(int reason)
 			  OPLUS_CHG_TRACK_CURX_INFO_LEN - index,
 			  "main_sub_temp %d %d, ",
 			  chip->main_batt_temperature, chip->sub_batt_temperature);
-	schedule_delayed_work(&g_switching_chip->parallel_mos_trigger_work, 0);
+	queue_delayed_work(system_power_efficient_wq, &g_switching_chip->parallel_mos_trigger_work, 0);
 	chg_err("upload parallel_charging_unbalance\n");
 
 	return 0;

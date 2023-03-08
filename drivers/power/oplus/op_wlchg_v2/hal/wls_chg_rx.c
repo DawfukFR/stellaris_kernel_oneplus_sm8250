@@ -171,7 +171,7 @@ static void oplus_chg_wls_cep_check_work(struct work_struct *work)
 	}
 
 out:
-	schedule_delayed_work(&wls_rx->cep_check_work, msecs_to_jiffies(100));
+	queue_delayed_work(system_power_efficient_wq, &wls_rx->cep_check_work, msecs_to_jiffies(100));
 }
 
 int oplus_chg_wls_rx_set_vout_ms(struct oplus_wls_chg_rx *wls_rx, int vol_mv, int wait_time_ms)
@@ -200,7 +200,7 @@ int oplus_chg_wls_rx_set_vout_ms(struct oplus_wls_chg_rx *wls_rx, int vol_mv, in
 	(void)oplus_chg_wls_get_cep_check_update(wls_rx, &cep);
 	if (wait_time_ms > 0) {
 		reinit_completion(&wls_rx->cep_ok_ack);
-		schedule_delayed_work(&wls_rx->cep_check_work, msecs_to_jiffies(100));
+		queue_delayed_work(system_power_efficient_wq, &wls_rx->cep_check_work, msecs_to_jiffies(100));
 		rc = wait_for_completion_timeout(&wls_rx->cep_ok_ack, msecs_to_jiffies(wait_time_ms));
 		if (!rc) {
 			pr_err("wait cep timeout\n");
@@ -211,7 +211,7 @@ int oplus_chg_wls_rx_set_vout_ms(struct oplus_wls_chg_rx *wls_rx, int vol_mv, in
 			return -EINVAL;
 	} else if (wait_time_ms < 0) {
 		reinit_completion(&wls_rx->cep_ok_ack);
-		schedule_delayed_work(&wls_rx->cep_check_work, msecs_to_jiffies(100));
+		queue_delayed_work(system_power_efficient_wq, &wls_rx->cep_check_work, msecs_to_jiffies(100));
 		wait_for_completion(&wls_rx->cep_ok_ack);
 		if (wls_rx->clean_source)
 			return -EINVAL;

@@ -276,7 +276,7 @@ static void ufshid_trigger_on(struct ufshid_dev *hid)
 
 	ufshid_auto_hibern8_enable(hid, 0);
 
-	schedule_delayed_work(&hid->hid_trigger_work, 0);
+	queue_delayed_work(system_power_efficient_wq, &hid->hid_trigger_work, 0);
 }
 
 static void ufshid_allow_enter_suspend(struct ufshid_dev *hid)
@@ -349,7 +349,7 @@ static void ufshid_trigger_work_fn(struct work_struct *dwork)
 	}
 	mutex_unlock(&hid->sysfs_lock);
 
-	schedule_delayed_work(&hid->hid_trigger_work,
+	queue_delayed_work(system_power_efficient_wq, &hid->hid_trigger_work,
 			      msecs_to_jiffies(hid->hid_trigger_delay));
 
 	HID_DEBUG(hid, "end hid_trigger_work_fn");
@@ -421,7 +421,7 @@ void ufshid_reset(struct ufsf_feature *ufsf)
 	 * hid_trigger will be checked under sysfs_lock in worker.
 	 */
 	if (hid->hid_trigger)
-		schedule_delayed_work(&hid->hid_trigger_work, 0);
+		queue_delayed_work(system_power_efficient_wq, &hid->hid_trigger_work, 0);
 
 	INFO_MSG("reset completed.");
 }
@@ -464,7 +464,7 @@ void ufshid_on_idle(struct ufsf_feature *ufsf)
 	if (delayed_work_pending(&hid->hid_trigger_work))
 		cancel_delayed_work(&hid->hid_trigger_work);
 
-	schedule_delayed_work(&hid->hid_trigger_work, 0);
+	queue_delayed_work(system_power_efficient_wq, &hid->hid_trigger_work, 0);
 }
 
 /* sysfs function */

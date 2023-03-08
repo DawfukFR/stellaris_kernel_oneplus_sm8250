@@ -858,7 +858,7 @@ void mtk_charger_int_handler(void)
 		pinfo->step_cnt = 0;
 		pinfo->step_chg_current = pinfo->data.step1_current_ma;
 		charger_dev_set_input_current(g_oplus_chip->chgic_mtk.oplus_info->chg1_dev, 500000);
-		schedule_delayed_work(&pinfo->step_charging_work, msecs_to_jiffies(5000));
+		queue_delayed_work(system_power_efficient_wq, &pinfo->step_charging_work, msecs_to_jiffies(5000));
 	} else {
 		pr_err("%s, Charger Plug Out\n", __func__);
 		charger_dev_set_input_current(g_oplus_chip->chgic_mtk.oplus_info->chg1_dev, 500000);
@@ -3297,7 +3297,7 @@ static void mt6360_step_charging_work(struct work_struct *work)
 		}
 	}
 
-	schedule_delayed_work(&pinfo->step_charging_work, msecs_to_jiffies(5000));
+	queue_delayed_work(system_power_efficient_wq, &pinfo->step_charging_work, msecs_to_jiffies(5000));
 
 	return;
 }

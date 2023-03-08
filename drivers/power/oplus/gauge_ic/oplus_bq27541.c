@@ -1246,7 +1246,7 @@ error_occured:
 	}
 	chip->need_check = true;
 /*	if (chip->error_occured) {
-		schedule_delayed_work(&gauge_ic->afi_update, 0);
+		queue_delayed_work(system_power_efficient_wq, &gauge_ic->afi_update, 0);
 		printk(KERN_ERR "[%s] error_occured retrigger afi update\n", __func__);
 	}
 */
@@ -1290,7 +1290,7 @@ static int zy0603_protect_check(void)
 			if (CHECKSUM_ERROR_CNT <= checksum_error) {
 				checksum_error = 0;
 				if (gauge_ic && gauge_ic->afi_update_done) {
-					schedule_delayed_work(&gauge_ic->afi_update, 0);
+					queue_delayed_work(system_power_efficient_wq, &gauge_ic->afi_update, 0);
 				}
 			}
 		} else {
@@ -1305,7 +1305,7 @@ static int zy0603_protect_check(void)
 			if (CHECKSUM_ERROR_CNT <= qmax_fgstatus_error) {
 				qmax_fgstatus_error = 0;
 				if (gauge_ic && gauge_ic->afi_update_done) {
-					schedule_delayed_work(&gauge_ic->afi_update, 0);
+					queue_delayed_work(system_power_efficient_wq, &gauge_ic->afi_update, 0);
 				}
 			}
 		} else {
@@ -5720,7 +5720,7 @@ rerun :
 
 /*
 	INIT_DELAYED_WORK(&fg_ic->hw_config, bq27541_hw_config);
-	schedule_delayed_work(&fg_ic->hw_config, 0);
+	queue_delayed_work(system_power_efficient_wq, &fg_ic->hw_config, 0);
 */
 	fg_ic->soc_pre = 50;
 	if(fg_ic->batt_bq28z610) {

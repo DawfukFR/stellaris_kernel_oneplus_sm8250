@@ -1696,7 +1696,7 @@ static void rk826_update_battery_temperature_soc(struct work_struct *work)
 	}
 	chg_err("kilody in! soc = %d,temp = %d,uv_bat = %d,current_bat = %d,chging = %d\n",
 			soc,temp,the_bat.uv_bat,the_bat.current_bat,oplus_vooc_get_fastchg_ing());
-	schedule_delayed_work(&rk826_update_temp_soc, round_jiffies_relative(msecs_to_jiffies(400)));
+	queue_delayed_work(system_power_efficient_wq, &rk826_update_temp_soc, round_jiffies_relative(msecs_to_jiffies(400)));
 }
 
 static int rk826_get_prev_battery_mvolts(void)
@@ -1731,7 +1731,7 @@ static int rk826_get_prev_battery_current(void)
 static void rk826_update_work_init(void)
 {
 	INIT_DELAYED_WORK(&rk826_update_temp_soc, rk826_update_battery_temperature_soc);
-	//schedule_delayed_work(&rk826_update_temp_soc, round_jiffies_relative(msecs_to_jiffies(400)));
+	//queue_delayed_work(system_power_efficient_wq, &rk826_update_temp_soc, round_jiffies_relative(msecs_to_jiffies(400)));
 }
 
 void rk826_set_reset_active(struct oplus_vooc_chip *chip)

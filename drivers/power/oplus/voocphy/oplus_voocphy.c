@@ -359,7 +359,7 @@ int charger_boost_min_cpu_freq_set(int *freq, unsigned int clear_time)
 	mutex_lock(&charger_boost);
 	is_clear_timer_clear = false;
 	last_jiffies = jiffies + msecs_to_jiffies(clear_time);
-	schedule_delayed_work(&g_voocphy_chip->clear_boost_work, msecs_to_jiffies(clear_time));
+	queue_delayed_work(system_power_efficient_wq, &g_voocphy_chip->clear_boost_work, msecs_to_jiffies(clear_time));
 	mutex_unlock(&charger_boost);
 
 	return 0;
@@ -3797,7 +3797,7 @@ void oplus_voocphy_handle_voocphy_status(struct work_struct *work)
 
 bool oplus_voocphy_wake_notify_fastchg_work(struct oplus_voocphy_manager *chip)
 {
-	return schedule_delayed_work(&chip->notify_fastchg_work, 0);
+	return queue_delayed_work(system_power_efficient_wq, &chip->notify_fastchg_work, 0);
 }
 
 void oplus_voocphy_set_status_and_notify_ap(struct oplus_voocphy_manager *chip,
@@ -5890,7 +5890,7 @@ void voocphy_service(struct work_struct *work)
 bool oplus_vooc_wake_voocphy_service_work(struct oplus_voocphy_manager *chip, int request)
 {
 	chip->voocphy_request= request;
-	schedule_delayed_work(&chip->voocphy_service_work, 0);
+	queue_delayed_work(system_power_efficient_wq, &chip->voocphy_service_work, 0);
 	if (oplus_voocphy_get_bidirect_cp_support()) {
 		memcpy(chip->int_column_pre, chip->int_column, sizeof(chip->int_column));
 		voocphy_dbg("request %d 09~0E[0x%02x 0x%02x 0x%02x 0x%02x 0x%02x 0x%02x]\n",
@@ -5902,13 +5902,13 @@ bool oplus_vooc_wake_voocphy_service_work(struct oplus_voocphy_manager *chip, in
 
 bool oplus_vooc_wake_monitor_work(struct oplus_voocphy_manager *chip)
 {
-	schedule_delayed_work(&chip->monitor_work, 0);
+	queue_delayed_work(system_power_efficient_wq, &chip->monitor_work, 0);
 	return true;
 }
 
 bool oplus_vooc_wake_monitor_start_work(struct oplus_voocphy_manager *chip)
 {
-	schedule_delayed_work(&chip->monitor_start_work, 0);
+	queue_delayed_work(system_power_efficient_wq, &chip->monitor_start_work, 0);
 	return true;
 }
 
@@ -5923,7 +5923,7 @@ bool oplus_voocphy_chip_is_null(void)
 void oplus_voocphy_wake_modify_cpufeq_work(int flag)
 {
 	voocphy_info("%s %s\n", __func__, flag == CPU_CHG_FREQ_STAT_UP ?"request":"release");
-	schedule_delayed_work(&g_voocphy_chip->modify_cpufeq_work, 0);
+	queue_delayed_work(system_power_efficient_wq, &g_voocphy_chip->modify_cpufeq_work, 0);
 }
 
 void oplus_voocphy_modify_cpufeq_work(struct work_struct *work)
@@ -5956,7 +5956,7 @@ void oplus_voocphy_wake_check_chg_out_work(unsigned int delay_ms)
 {
 	voocphy_info("check chg out after %d ms\n", delay_ms);
 	cancel_delayed_work(&g_voocphy_chip->check_chg_out_work);
-	schedule_delayed_work(&g_voocphy_chip->check_chg_out_work, round_jiffies_relative(msecs_to_jiffies(delay_ms)));
+	queue_delayed_work(system_power_efficient_wq, &g_voocphy_chip->check_chg_out_work, round_jiffies_relative(msecs_to_jiffies(delay_ms)));
 }
 
 void oplus_voocphy_check_chg_out_work(struct work_struct *work)

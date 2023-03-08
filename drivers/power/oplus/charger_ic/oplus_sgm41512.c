@@ -1721,7 +1721,7 @@ static void sgm41512_bc12_retry_work(struct work_struct *work)
 			sgm41512_get_bc12(chip);
 		} else {
 			chg_err("BC1.2 not complete delay 50ms,delay_cnt=%d\n", chip->bc12_delay_cnt);
-			schedule_delayed_work(&chip->bc12_retry_work, round_jiffies_relative(msecs_to_jiffies(50)));
+			queue_delayed_work(system_power_efficient_wq, &chip->bc12_retry_work, round_jiffies_relative(msecs_to_jiffies(50)));
 		}
 	}
 }
@@ -1732,7 +1732,7 @@ static void sgm41512_start_bc12_retry(struct chip_sgm41512 *chip) {
 
 	sgm41512_set_iindet();
 	if (chip->is_sgm41512) {
-		schedule_delayed_work(&chip->bc12_retry_work, round_jiffies_relative(msecs_to_jiffies(100)));
+		queue_delayed_work(system_power_efficient_wq, &chip->bc12_retry_work, round_jiffies_relative(msecs_to_jiffies(100)));
 	}
 }
 
@@ -2096,9 +2096,9 @@ static int sgm41512_charger_probe(struct i2c_client *client,
 #else
 	if (MSM_BOOT_MODE__NORMAL == get_boot_mode())
 #endif
-		schedule_delayed_work(&chip->init_work, msecs_to_jiffies(INIT_WORK_NORMAL_DELAY));
+		queue_delayed_work(system_power_efficient_wq, &chip->init_work, msecs_to_jiffies(INIT_WORK_NORMAL_DELAY));
 	else
-		schedule_delayed_work(&chip->init_work, msecs_to_jiffies(INIT_WORK_OTHER_DELAY));
+		queue_delayed_work(system_power_efficient_wq, &chip->init_work, msecs_to_jiffies(INIT_WORK_OTHER_DELAY));
 
 	set_charger_ic(SGM41512);
 

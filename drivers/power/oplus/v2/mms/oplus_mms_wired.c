@@ -1763,7 +1763,7 @@ static int oplus_usbtemp_monitor_main(void *data)
 			oplus_init_usbtemp_wakelock(chip);
 			oplus_set_usbtemp_wakelock(chip, true);
 			cancel_delayed_work(&chip->usbtemp_recover_work);
-			schedule_delayed_work(&chip->usbtemp_recover_work, msecs_to_jiffies(usbtemp_recover_interval));
+			queue_delayed_work(system_power_efficient_wq, &chip->usbtemp_recover_work, msecs_to_jiffies(usbtemp_recover_interval));
 		}
 		msleep(delay);
 		log_count++;
@@ -2176,7 +2176,7 @@ static void oplus_mms_wired_init_work(struct work_struct *work)
 	if (chip->buck_ic == NULL) {
 		if (retry > 0) {
 			retry--;
-			schedule_delayed_work(&chip->mms_wired_init_work,
+			queue_delayed_work(system_power_efficient_wq, &chip->mms_wired_init_work,
 				msecs_to_jiffies(OPLUS_CHG_IC_INIT_RETRY_DELAY));
 			return;
 		} else {
@@ -2190,7 +2190,7 @@ static void oplus_mms_wired_init_work(struct work_struct *work)
 	if (rc == -EAGAIN) {
 		if (retry > 0) {
 			retry--;
-			schedule_delayed_work(&chip->mms_wired_init_work,
+			queue_delayed_work(system_power_efficient_wq, &chip->mms_wired_init_work,
 				msecs_to_jiffies(OPLUS_CHG_IC_INIT_RETRY_DELAY));
 			return;
 		} else {
@@ -2409,14 +2409,14 @@ static void oplus_mms_wired_ccdetect_work(struct work_struct *work)
 		oplus_wired_ccdetect_enable(chip, true);
 		if (chip->usb_status == USB_TEMP_HIGH) {
 			cancel_delayed_work(&chip->usbtemp_recover_work);
-			schedule_delayed_work(&chip->usbtemp_recover_work, 0);
+			queue_delayed_work(system_power_efficient_wq, &chip->usbtemp_recover_work, 0);
 		}
 	} else {
 		chip->usbtemp_check = false;
 		chip->abnormal_adapter = false;
 		if(chip->usb_status == USB_TEMP_HIGH) {
 			cancel_delayed_work(&chip->usbtemp_recover_work);
-			schedule_delayed_work(&chip->usbtemp_recover_work, 0);
+			queue_delayed_work(system_power_efficient_wq, &chip->usbtemp_recover_work, 0);
 		}
 		if (!oplus_wired_get_otg_switch_status()) {
 			oplus_wired_ccdetect_enable(chip, false);
@@ -2530,7 +2530,7 @@ static void oplus_wired_svid_handler(struct oplus_chg_ic_dev *ic_dev,
 					void *virq_data)
 {
 	struct oplus_mms_wired *chip = virq_data;
-	schedule_delayed_work(&chip->svid_handler_work, 0);
+	queue_delayed_work(system_power_efficient_wq, &chip->svid_handler_work, 0);
 }
 
 static void oplus_wired_otg_enable_handler(struct oplus_chg_ic_dev *ic_dev,
@@ -2547,7 +2547,7 @@ static void oplus_wired_cc_detect_handler(struct oplus_chg_ic_dev *ic_dev,
 	struct oplus_mms_wired *chip = virq_data;
 
 	cancel_delayed_work(&chip->ccdetect_work);
-	schedule_delayed_work(&chip->ccdetect_work, msecs_to_jiffies(CCDETECT_DELAY_MS));
+	queue_delayed_work(system_power_efficient_wq, &chip->ccdetect_work, msecs_to_jiffies(CCDETECT_DELAY_MS));
 }
 
 static void oplus_wired_cc_changed_handler(struct oplus_chg_ic_dev *ic_dev,
@@ -2555,7 +2555,7 @@ static void oplus_wired_cc_changed_handler(struct oplus_chg_ic_dev *ic_dev,
 {
 	struct oplus_mms_wired *chip = virq_data;
 
-	schedule_delayed_work(&chip->typec_state_change_work, 0);
+	queue_delayed_work(system_power_efficient_wq, &chip->typec_state_change_work, 0);
 }
 
 static void oplus_wired_voltage_changed_handler(struct oplus_chg_ic_dev *ic_dev,
@@ -3351,7 +3351,7 @@ static int oplus_mms_wired_probe(struct platform_device *pdev)
 
 	chip->dischg_flag = false;
 
-	schedule_delayed_work(&chip->mms_wired_init_work, 0);
+	queue_delayed_work(system_power_efficient_wq, &chip->mms_wired_init_work, 0);
 
 	mutex_init(&chip->bcc_curr_done_mutex);
 	oplus_mms_wired_bcc_parms_reset(chip);

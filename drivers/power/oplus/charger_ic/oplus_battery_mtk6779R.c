@@ -1599,7 +1599,7 @@ void oplus_chg_status_change(bool chg_status)
 			pinfo->step_cnt = 0;
 			pinfo->step_chg_current = pinfo->data.step1_current_ma;
 			charger_dev_set_input_current(g_oplus_chip->chgic_mtk.oplus_info->chg1_dev, 500000);
-			schedule_delayed_work(&pinfo->step_charging_work, msecs_to_jiffies(5000));
+			queue_delayed_work(system_power_efficient_wq, &pinfo->step_charging_work, msecs_to_jiffies(5000));
 		}
 		printk("oplus_wake_up_usbtemp_thread start\n");
 		oplus_wake_up_usbtemp_thread();
@@ -2884,7 +2884,7 @@ static void mt6360_step_charging_work(struct work_struct *work)
 		}
 	}
 
-	schedule_delayed_work(&pinfo->step_charging_work, msecs_to_jiffies(5000));
+	queue_delayed_work(system_power_efficient_wq, &pinfo->step_charging_work, msecs_to_jiffies(5000));
 
 	return;
 }

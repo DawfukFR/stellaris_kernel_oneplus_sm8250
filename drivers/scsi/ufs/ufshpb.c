@@ -1130,7 +1130,7 @@ static int ufshpb_map_req_error(struct ufshpb_req *map_req)
 				      &hpb->lh_map_req_retry);
 			spin_unlock(&hpb->retry_list_lock);
 
-			schedule_delayed_work(&hpb->retry_work,
+			queue_delayed_work(system_power_efficient_wq, &hpb->retry_work,
 					      msecs_to_jiffies(RETRY_DELAY_MS));
 			return -EAGAIN;
 		}
@@ -1999,7 +1999,7 @@ static void ufshpb_retry_work_handler(struct work_struct *work)
 	ufshpb_lu_put(hpb);
 
 	if (do_retry)
-		schedule_delayed_work(&hpb->retry_work,
+		queue_delayed_work(system_power_efficient_wq, &hpb->retry_work,
 				      msecs_to_jiffies(RETRY_DELAY_MS));
 	return;
 wakeup_ee_worker:
@@ -3093,7 +3093,7 @@ void ufshpb_resume(struct ufsf_feature *ufsf)
 			if (do_task_work)
 				schedule_work(&hpb->task_work);
 			if (do_retry_work)
-				schedule_delayed_work(&hpb->retry_work,
+				queue_delayed_work(system_power_efficient_wq, &hpb->retry_work,
 						      msecs_to_jiffies(100));
 		}
 	}

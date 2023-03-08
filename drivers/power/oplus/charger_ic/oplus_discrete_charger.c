@@ -902,7 +902,7 @@ static void oplus_ccdetect_work(struct work_struct *work)
 		if (oplus_get_otg_switch_status() == false)
 			oplus_ccdetect_disable();
 		if(g_oplus_chip->usb_status == USB_TEMP_HIGH) {
-			schedule_delayed_work(&usbtemp_recover_work, 0);
+			queue_delayed_work(system_power_efficient_wq, &usbtemp_recover_work, 0);
 		}
 	}
 }
@@ -1063,7 +1063,7 @@ irqreturn_t oplus_ccdetect_change_handler(int irq, void *data)
 
 	cancel_delayed_work_sync(&chg->ccdetect_work);
 	printk(KERN_ERR "[OPLUS_CHG][%s]: Scheduling ccdetect work!\n", __func__);
-	schedule_delayed_work(&chg->ccdetect_work,
+	queue_delayed_work(system_power_efficient_wq, &chg->ccdetect_work,
 			msecs_to_jiffies(CCDETECT_DELAY_MS));
 	return IRQ_HANDLED;
 }
@@ -2283,7 +2283,7 @@ static int oplus_discrete_iio_set_prop(struct smb_charger *chg, int channel, int
 			if (qpnp_is_power_off_charging() && !chg->first_hardreset) {
 				chg->first_hardreset = true;
 				chg->keep_vbus_5v = true;
-				schedule_delayed_work(&chg->keep_vbus_work, msecs_to_jiffies(KEEP_VBUS_DELAY));
+				queue_delayed_work(system_power_efficient_wq, &chg->keep_vbus_work, msecs_to_jiffies(KEEP_VBUS_DELAY));
 			}
 		}
 		else
@@ -2670,7 +2670,7 @@ static int discrete_charger_probe(struct platform_device *pdev)
 			level = gpio_get_value(chg->ccdetect_gpio);
 		}
 		if (level == 0)
-			schedule_delayed_work(&chg->ccdetect_work, 6000);
+			queue_delayed_work(system_power_efficient_wq, &chg->ccdetect_work, 6000);
 	}
 
 	oplus_chg_configfs_init(oplus_chip);

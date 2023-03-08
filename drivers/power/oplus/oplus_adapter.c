@@ -121,7 +121,7 @@ void oplus_adapter_fw_update(void)
 		adapter_xlog_printk(CHG_LOG_CRTI, " call \n");
         /*schedule_delayed_work_on(7, &chip->adapter_update_work, */
         /*                        round_jiffies_relative(msecs_to_jiffies(ADAPTER_UPDATE_DELAY)));*/
-        schedule_delayed_work(&chip->adapter_update_work,
+        queue_delayed_work(system_power_efficient_wq, &chip->adapter_update_work,
                                 round_jiffies_relative(msecs_to_jiffies(ADAPTER_UPDATE_DELAY)));
 }
 

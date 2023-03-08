@@ -2101,7 +2101,7 @@ static irqreturn_t bq25601d_irq_handler_fn(int irq, void *dev_id)
 #ifdef CONFIG_OPLUS_CHARGER_MTK6781
 	if (bq25601d_input_current_delay_work_running == false) {
 		bq25601d_input_current_delay_work_running = true;
-		schedule_delayed_work(&bq25601d_input_current_delay_work, round_jiffies_relative(msecs_to_jiffies(0)));
+		queue_delayed_work(system_power_efficient_wq, &bq25601d_input_current_delay_work, round_jiffies_relative(msecs_to_jiffies(0)));
 	}
 #endif
 	if (oplus_otg_online == 0) {
@@ -2109,7 +2109,7 @@ static irqreturn_t bq25601d_irq_handler_fn(int irq, void *dev_id)
 	}
 	if (fg_bq25601d_irq_delay_work_running == false) {
 		fg_bq25601d_irq_delay_work_running = true;
-		schedule_delayed_work(&bq25601d_irq_delay_work, round_jiffies_relative(msecs_to_jiffies(50)));
+		queue_delayed_work(system_power_efficient_wq, &bq25601d_irq_delay_work, round_jiffies_relative(msecs_to_jiffies(50)));
 	}
 
 	return IRQ_HANDLED;
@@ -2293,7 +2293,7 @@ static int bq25601d_driver_probe(struct i2c_client *client, const struct i2c_dev
 	register_charger_devinfo();
 	usleep_range(1000, 1200);
 	INIT_DELAYED_WORK(&charger_modefy_work, do_charger_modefy_work);
-	schedule_delayed_work(&charger_modefy_work, 0);
+	queue_delayed_work(system_power_efficient_wq, &charger_modefy_work, 0);
 	chg_debug("call OK!\n");
 	return 0;
 }

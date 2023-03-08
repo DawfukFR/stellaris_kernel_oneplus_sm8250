@@ -324,7 +324,7 @@ static void oplus_vooc_bcc_get_curr_func(struct work_struct *work)
 	}
 	pre_curve_idx = chip->bcc_curve_idx;
 
-	schedule_delayed_work(&chip->bcc_get_max_min_curr, OPLUS_VOOC_BCC_UPDATE_INTERVAL);
+	queue_delayed_work(system_power_efficient_wq, &chip->bcc_get_max_min_curr, OPLUS_VOOC_BCC_UPDATE_INTERVAL);
 }
 
 bool oplus_vooc_wake_bcc_update_work(void)
@@ -333,7 +333,7 @@ bool oplus_vooc_wake_bcc_update_work(void)
 		chg_err(" g_vooc_chip NULL,return\n");
 		return true;
 	}
-	schedule_delayed_work(&g_vooc_chip->bcc_get_max_min_curr, OPLUS_VOOC_BCC_UPDATE_INTERVAL);
+	queue_delayed_work(system_power_efficient_wq, &g_vooc_chip->bcc_get_max_min_curr, OPLUS_VOOC_BCC_UPDATE_INTERVAL);
 	g_vooc_chip->bcc_wake_up_done = true;
 	return true;
 }
@@ -457,7 +457,7 @@ static void vooc_watchdog_work_func(struct work_struct *work)
 static void oplus_vooc_check_charger_out(struct oplus_vooc_chip *chip)
 {
 	vooc_xlog_printk(CHG_LOG_CRTI, "  call\n");
-	schedule_delayed_work(&chip->check_charger_out_work,
+	queue_delayed_work(system_power_efficient_wq, &chip->check_charger_out_work,
 		round_jiffies_relative(msecs_to_jiffies(3000)));
 }
 
@@ -2188,7 +2188,7 @@ void fw_update_thread_fix(struct work_struct *work)
 void oplus_vooc_fw_update_work_init(struct oplus_vooc_chip *chip)
 {
 	INIT_DELAYED_WORK(&chip->fw_update_work, fw_update_thread);
-	schedule_delayed_work(&chip->fw_update_work, round_jiffies_relative(msecs_to_jiffies(FASTCHG_FW_INTERVAL_INIT)));
+	queue_delayed_work(system_power_efficient_wq, &chip->fw_update_work, round_jiffies_relative(msecs_to_jiffies(FASTCHG_FW_INTERVAL_INIT)));
 }
 
 void oplus_vooc_fw_update_work_plug_in(void)
@@ -2202,7 +2202,7 @@ void oplus_vooc_fw_update_work_plug_in(void)
 	}
 	g_vooc_chip->mcu_update_ing_fix = true;
 	INIT_DELAYED_WORK(&g_vooc_chip->fw_update_work_fix, fw_update_thread_fix);
-	schedule_delayed_work(&g_vooc_chip->fw_update_work_fix, round_jiffies_relative(msecs_to_jiffies(FASTCHG_FW_INTERVAL_INIT)));
+	queue_delayed_work(system_power_efficient_wq, &g_vooc_chip->fw_update_work_fix, round_jiffies_relative(msecs_to_jiffies(FASTCHG_FW_INTERVAL_INIT)));
 }
 
 void oplus_vooc_shedule_fastchg_work(void)
@@ -2210,7 +2210,7 @@ void oplus_vooc_shedule_fastchg_work(void)
 	if (!g_vooc_chip) {
 		chg_err(" g_vooc_chip is NULL\n");
 	} else {
-		schedule_delayed_work(&g_vooc_chip->fastchg_work, 0);
+		queue_delayed_work(system_power_efficient_wq, &g_vooc_chip->fastchg_work, 0);
 	}
 }
 static ssize_t proc_fastchg_fw_update_write(struct file *file, const char __user *buff,
@@ -2231,7 +2231,7 @@ static ssize_t proc_fastchg_fw_update_write(struct file *file, const char __user
 	if (write_data[0] == '1') {
 		chg_err("fastchg_fw_update\n");
 		chip->fw_update_flag = 1;
-		schedule_delayed_work(&chip->fw_update_work, 0);
+		queue_delayed_work(system_power_efficient_wq, &chip->fw_update_work, 0);
 	} else {
 		chip->fw_update_flag = 0;
 		chg_err("Disable fastchg_fw_update\n");
@@ -2417,7 +2417,7 @@ manu_version_alloc_err:
 
 bool oplus_vooc_wake_fastchg_work(struct oplus_vooc_chip *chip)
 {
-	return schedule_delayed_work(&chip->fastchg_work, 0);
+	return queue_delayed_work(system_power_efficient_wq, &chip->fastchg_work, 0);
 }
 
 void oplus_vooc_print_log(void)

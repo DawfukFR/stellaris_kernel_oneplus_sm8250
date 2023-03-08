@@ -944,7 +944,7 @@ static void oplus_vooc_switch_fast_chg(struct oplus_chg_vooc *chip)
 		vote(chip->vooc_disable_votable, UPGRADE_FW_VOTER, true, 1,
 		     false);
 		chip->mcu_update_ing_fix = true;
-		schedule_delayed_work(&chip->fw_update_work_fix,
+		queue_delayed_work(system_power_efficient_wq, &chip->fw_update_work_fix,
 				      round_jiffies_relative(msecs_to_jiffies(
 					      FASTCHG_FW_INTERVAL_INIT)));
 	}
@@ -1218,7 +1218,7 @@ static void oplus_vooc_switch_check_work(struct work_struct *work)
 
 out:
 	chg_info("schedule_delay = %ums\n", jiffies_to_msecs(schedule_delay));
-	schedule_delayed_work(&chip->vooc_switch_check_work, schedule_delay);
+	queue_delayed_work(system_power_efficient_wq, &chip->vooc_switch_check_work, schedule_delay);
 }
 
 static void oplus_vooc_check_charger_out_work(struct work_struct *work)
@@ -1308,7 +1308,7 @@ static void oplus_vooc_fastchg_exit(struct oplus_chg_vooc *chip,
 	/* If fast charge is not disabled, try to reload fast charge */
 	if (chip->wired_online &&
 	    !get_effective_result(chip->vooc_disable_votable))
-		schedule_delayed_work(&chip->vooc_switch_check_work, 0);
+		queue_delayed_work(system_power_efficient_wq, &chip->vooc_switch_check_work, 0);
 }
 
 static int oplus_vooc_get_min_curr_level(int level_base, int level_new,
@@ -1787,7 +1787,7 @@ static void oplus_vooc_bcc_get_curr_func(struct work_struct *work)
 	}
 	pre_curve_idx = chip->bcc_curve_idx;
 
-	schedule_delayed_work(&chip->bcc_get_max_min_curr, OPLUS_VOOC_BCC_UPDATE_INTERVAL);
+	queue_delayed_work(system_power_efficient_wq, &chip->bcc_get_max_min_curr, OPLUS_VOOC_BCC_UPDATE_INTERVAL);
 }
 
 static int oplus_vooc_push_break_code(struct oplus_chg_vooc *chip, int code)
@@ -1817,7 +1817,7 @@ bool oplus_vooc_wake_bcc_update_work(struct oplus_chg_vooc *chip)
 		chg_err(" g_vooc_chip NULL,return\n");
 		return true;
 	}
-	schedule_delayed_work(&chip->bcc_get_max_min_curr, OPLUS_VOOC_BCC_UPDATE_INTERVAL);
+	queue_delayed_work(system_power_efficient_wq, &chip->bcc_get_max_min_curr, OPLUS_VOOC_BCC_UPDATE_INTERVAL);
 	chip->bcc_wake_up_done = true;
 	return true;
 }
@@ -2160,7 +2160,7 @@ out:
 		oplus_mms_get_item_data(chip->wired_topic, WIRED_ITEM_CC_DETECT,
 					&topic_data, true);
 		cc_detect = topic_data.intval;
-		schedule_delayed_work(
+		queue_delayed_work(system_power_efficient_wq, 
 			&chip->check_charger_out_work,
 			(cc_detect == CC_DETECT_NOTPLUG) ? 0 : msecs_to_jiffies(3000));
 	}
@@ -2173,7 +2173,7 @@ out:
 	if ((data == VOOC_NOTIFY_FAST_ABSENT && !charger_delay_check &&
 	    !chip->icon_debounce) || data_err) {
 		chip->fastchg_force_exit = true;
-		schedule_delayed_work(&chip->check_charger_out_work, 0);
+		queue_delayed_work(system_power_efficient_wq, &chip->check_charger_out_work, 0);
 	}
 
 	if (chip->support_abnormal_adapter &&
@@ -2181,7 +2181,7 @@ out:
 	    chip->icon_debounce) {
 		chip->fastchg_force_exit = false;
 		chg_info("abnormal adapter check charger out\n");
-		schedule_delayed_work(&chip->check_charger_out_work, msecs_to_jiffies(3000));
+		queue_delayed_work(system_power_efficient_wq, &chip->check_charger_out_work, msecs_to_jiffies(3000));
 	}
 
 	oplus_vooc_eint_register(chip->vooc_ic);
@@ -2252,7 +2252,7 @@ static void oplus_vooc_subscribe_wired_topic(struct oplus_mms *topic,
 				true);
 	chip->wired_online = !!data.intval | chip->vooc_online;
 	if (chip->wired_online)
-		schedule_delayed_work(&chip->vooc_switch_check_work, 0);
+		queue_delayed_work(system_power_efficient_wq, &chip->vooc_switch_check_work, 0);
 
 	oplus_mms_get_item_data(chip->wired_topic, WIRED_ITEM_PRESENT, &data,
 				true);
@@ -2280,7 +2280,7 @@ static void oplus_vooc_plugin_work(struct work_struct *work)
 		} else {
 			chip->bat_temp_region = TEMP_REGION_MAX;
 		}
-		schedule_delayed_work(&chip->vooc_switch_check_work, 0);
+		queue_delayed_work(system_power_efficient_wq, &chip->vooc_switch_check_work, 0);
 	} else {
 		chg_info("wired charge offline\n");
 		chip->bat_temp_region = TEMP_REGION_MAX;
@@ -2344,7 +2344,7 @@ static void oplus_vooc_chg_type_change_work(struct work_struct *work)
 		container_of(work, struct oplus_chg_vooc, chg_type_change_work);
 
 	if (chip->wired_online)
-		schedule_delayed_work(&chip->vooc_switch_check_work, 0);
+		queue_delayed_work(system_power_efficient_wq, &chip->vooc_switch_check_work, 0);
 	else
 		chg_err("chg_type changed, but wired_online is false\n");
 }
@@ -3292,7 +3292,7 @@ void oplus_vooc_fw_update_work_init(struct oplus_chg_vooc *chip)
 	if (chip->wired_icl_votable)
 		vote(chip->wired_icl_votable, UPGRADE_FW_VOTER, true, 500,
 		     true);
-	schedule_delayed_work(&chip->fw_update_work,
+	queue_delayed_work(system_power_efficient_wq, &chip->fw_update_work,
 			      round_jiffies_relative(msecs_to_jiffies(
 				      FASTCHG_FW_INTERVAL_INIT)));
 }
@@ -3311,7 +3311,7 @@ static void oplus_vooc_init_work(struct work_struct *work)
 	if (chip->vooc_ic == NULL) {
 		if (retry > 0) {
 			retry--;
-			schedule_delayed_work(
+			queue_delayed_work(system_power_efficient_wq, 
 				&chip->vooc_init_work,
 				msecs_to_jiffies(
 					OPLUS_CHG_IC_INIT_RETRY_DELAY));
@@ -3327,7 +3327,7 @@ static void oplus_vooc_init_work(struct work_struct *work)
 	if (rc == -EAGAIN) {
 		if (retry > 0) {
 			retry--;
-			schedule_delayed_work(
+			queue_delayed_work(system_power_efficient_wq, 
 				&chip->vooc_init_work,
 				msecs_to_jiffies(
 					OPLUS_CHG_IC_INIT_RETRY_DELAY));
@@ -3456,7 +3456,7 @@ static int oplus_vooc_disable_vote_callback(struct votable *votable, void *data,
 	if (chip->fastchg_disable)
 		chip->switch_retry_count = 0;
 	else if (chip->wired_online)
-		schedule_delayed_work(&chip->vooc_switch_check_work, 0);
+		queue_delayed_work(system_power_efficient_wq, &chip->vooc_switch_check_work, 0);
 
 	return 0;
 }
@@ -3473,7 +3473,7 @@ static int oplus_vooc_not_allow_vote_callback(struct votable *votable,
 	if (chip->fastchg_allow && chip->wired_online) {
 		vote(chip->vooc_disable_votable, FASTCHG_DUMMY_VOTER, false, 0,
 		     false);
-		schedule_delayed_work(&chip->vooc_switch_check_work, 0);
+		queue_delayed_work(system_power_efficient_wq, &chip->vooc_switch_check_work, 0);
 	}
 
 	return 0;
@@ -3489,7 +3489,7 @@ static int oplus_vooc_pd_svooc_vote_callback(struct votable *votable,
 	chg_info("%sallow pd svooc\n", !allow ? "not " : "");
 
 	if (chip->pd_svooc && chip->wired_online)
-		schedule_delayed_work(&chip->vooc_switch_check_work, 0);
+		queue_delayed_work(system_power_efficient_wq, &chip->vooc_switch_check_work, 0);
 
 	return 0;
 }
@@ -3837,7 +3837,7 @@ static ssize_t proc_fastchg_fw_update_write(struct file *file,
 		chip->fw_update_flag = true;
 		vote(chip->vooc_disable_votable, UPGRADE_FW_VOTER, true, 1,
 		     false);
-		schedule_delayed_work(&chip->fw_update_work, 0);
+		queue_delayed_work(system_power_efficient_wq, &chip->fw_update_work, 0);
 	} else {
 		chip->fw_update_flag = false;
 		chg_info("Disable fastchg_fw_update\n");
@@ -3966,7 +3966,7 @@ static int oplus_vooc_probe(struct platform_device *pdev)
 	oplus_vooc_init_watchdog_timer(chip);
 	oplus_vooc_awake_init(chip);
 
-	schedule_delayed_work(&chip->vooc_init_work, 0);
+	queue_delayed_work(system_power_efficient_wq, &chip->vooc_init_work, 0);
 
 	chg_info("probe success\n");
 	return 0;

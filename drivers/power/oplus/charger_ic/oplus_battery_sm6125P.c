@@ -3096,7 +3096,7 @@ static int smblib_set_sw_thermal_regulation(struct smb_charger *chg,
 						SW_THERM_REGULATION_VOTER)) {
 			vote(chg->awake_votable, SW_THERM_REGULATION_VOTER,
 								true, 0);
-			schedule_delayed_work(&chg->thermal_regulation_work, 0);
+			queue_delayed_work(system_power_efficient_wq, &chg->thermal_regulation_work, 0);
 		}
 	} else {
 		cancel_delayed_work_sync(&chg->thermal_regulation_work);
@@ -3314,7 +3314,7 @@ exit:
 	 */
 	if (is_client_vote_enabled(chg->usb_icl_votable,
 					SW_THERM_REGULATION_VOTER)) {
-		schedule_delayed_work(&chg->thermal_regulation_work,
+		queue_delayed_work(system_power_efficient_wq, &chg->thermal_regulation_work,
 				msecs_to_jiffies(THERM_REG_RECHECK_DELAY_1S));
 		return 0;
 	}
@@ -5260,7 +5260,7 @@ irqreturn_t icl_change_irq_handler(int irq, void *data)
 			delay = 0;
 
 		cancel_delayed_work_sync(&chg->icl_change_work);
-		schedule_delayed_work(&chg->icl_change_work,
+		queue_delayed_work(system_power_efficient_wq, &chg->icl_change_work,
 						msecs_to_jiffies(delay));
 	}
 
@@ -5330,8 +5330,8 @@ void smblib_usb_plugin_hard_reset_locked(struct smb_charger *chg)
 #ifdef OPLUS_FEATURE_CHG_BASIC
         if (vbus_rising) {
                 cancel_delayed_work_sync(&chg->chg_monitor_work);
-                schedule_delayed_work(&chg->chg_monitor_work, OPLUS_CHG_MONITOR_INTERVAL);
-		schedule_delayed_work(&chg->check_camera_and_hotspot_work, msecs_to_jiffies(2000));
+                queue_delayed_work(system_power_efficient_wq, &chg->chg_monitor_work, OPLUS_CHG_MONITOR_INTERVAL);
+		queue_delayed_work(system_power_efficient_wq, &chg->check_camera_and_hotspot_work, msecs_to_jiffies(2000));
 		oplus_wake_up_usbtemp_thread();
 		oplus_force_to_fulldump(true);
         } else {
@@ -5401,7 +5401,7 @@ static void smblib_arb_monitor_work(struct work_struct *work)
 		}
 	}
 
-	schedule_delayed_work(&chg->arb_monitor_work, msecs_to_jiffies(ARB_DELAY_MS));
+	queue_delayed_work(system_power_efficient_wq, &chg->arb_monitor_work, msecs_to_jiffies(ARB_DELAY_MS));
 
 	return;
 
@@ -5458,10 +5458,10 @@ void smblib_usb_plugin_locked(struct smb_charger *chg)
 
 		/* Schedule work to enable parallel charger */
 		vote(chg->awake_votable, PL_DELAY_VOTER, true, 0);
-		schedule_delayed_work(&chg->pl_enable_work,
+		queue_delayed_work(system_power_efficient_wq, &chg->pl_enable_work,
 					msecs_to_jiffies(PL_DELAY_MS));
 #ifdef OPLUS_FEATURE_CHG_BASIC
-		schedule_delayed_work(&chg->arb_monitor_work, msecs_to_jiffies(ARB_DELAY_MS));
+		queue_delayed_work(system_power_efficient_wq, &chg->arb_monitor_work, msecs_to_jiffies(ARB_DELAY_MS));
 #endif
 	} else {
 		/* Disable SW Thermal Regulation */
@@ -5538,8 +5538,8 @@ void smblib_usb_plugin_locked(struct smb_charger *chg)
 #ifdef OPLUS_FEATURE_CHG_BASIC
         if (vbus_rising) {
                 cancel_delayed_work_sync(&chg->chg_monitor_work);
-                schedule_delayed_work(&chg->chg_monitor_work, OPLUS_CHG_MONITOR_INTERVAL);
-		schedule_delayed_work(&chg->check_camera_and_hotspot_work, msecs_to_jiffies(2000));
+                queue_delayed_work(system_power_efficient_wq, &chg->chg_monitor_work, OPLUS_CHG_MONITOR_INTERVAL);
+		queue_delayed_work(system_power_efficient_wq, &chg->check_camera_and_hotspot_work, msecs_to_jiffies(2000));
 		oplus_wake_up_usbtemp_thread();
 		oplus_force_to_fulldump(true);
         } else {
@@ -6173,7 +6173,7 @@ irqreturn_t usbid_change_handler(int irq, void *data)
                         cancel_delayed_work_sync(&g_smb_chip->uusb_otg_work);
                         vote(g_smb_chip->awake_votable, OTG_DELAY_VOTER, true, 0);
                         chg_debug("Scheduling OTG work\n");
-                        schedule_delayed_work(&g_smb_chip->uusb_otg_work,
+                        queue_delayed_work(system_power_efficient_wq, &g_smb_chip->uusb_otg_work,
                                         msecs_to_jiffies(g_smb_chip->otg_delay_ms));
                         return IRQ_HANDLED;
                 }
@@ -6205,7 +6205,7 @@ static void smblib_lpd_launch_ra_open_work(struct smb_charger *chg)
 		chg->lpd_stage = LPD_STAGE_FLOAT;
 		cancel_delayed_work_sync(&chg->lpd_ra_open_work);
 		vote(chg->awake_votable, LPD_VOTER, true, 0);
-		schedule_delayed_work(&chg->lpd_ra_open_work,
+		queue_delayed_work(system_power_efficient_wq, &chg->lpd_ra_open_work,
 						msecs_to_jiffies(300));
 	}
 }
@@ -6235,7 +6235,7 @@ irqreturn_t typec_or_rid_detection_change_irq_handler(int irq, void *data)
 		if (!chg->moisture_present) {
 			vote(chg->awake_votable, OTG_DELAY_VOTER, true, 0);
 			smblib_dbg(chg, PR_INTERRUPT, "Scheduling OTG work\n");
-			schedule_delayed_work(&chg->uusb_otg_work,
+			queue_delayed_work(system_power_efficient_wq, &chg->uusb_otg_work,
 				msecs_to_jiffies(chg->otg_delay_ms));
 		}
 
@@ -6401,7 +6401,7 @@ irqreturn_t typec_attach_detach_irq_handler(int irq, void *data)
 #endif
 
 		if (chg->lpd_stage == LPD_STAGE_FLOAT_CANCEL)
-			schedule_delayed_work(&chg->lpd_detach_work,
+			queue_delayed_work(system_power_efficient_wq, &chg->lpd_detach_work,
 					msecs_to_jiffies(1000));
 	}
 
@@ -6484,7 +6484,7 @@ irqreturn_t high_duty_cycle_irq_handler(int irq, void *data)
 	 */
 	vote(chg->hdc_irq_disable_votable, HDC_IRQ_VOTER, true, 0);
 
-	schedule_delayed_work(&chg->clear_hdc_work, msecs_to_jiffies(60));
+	queue_delayed_work(system_power_efficient_wq, &chg->clear_hdc_work, msecs_to_jiffies(60));
 
 	return IRQ_HANDLED;
 }
@@ -6555,7 +6555,7 @@ irqreturn_t switcher_power_ok_irq_handler(int irq, void *data)
                          * permanently suspending the input if the boost-back
                          * condition is unintentionally hit.
                          */
-                        schedule_delayed_work(&chg->bb_removal_work,
+                        queue_delayed_work(system_power_efficient_wq, &chg->bb_removal_work,
                                 msecs_to_jiffies(BOOST_BACK_UNVOTE_DELAY_MS));
                 }
 #else
@@ -6583,7 +6583,7 @@ irqreturn_t wdog_snarl_irq_handler(int irq, void *data)
 	if (chg->wa_flags & SW_THERM_REGULATION_WA) {
 		cancel_delayed_work_sync(&chg->thermal_regulation_work);
 		vote(chg->awake_votable, SW_THERM_REGULATION_VOTER, true, 0);
-		schedule_delayed_work(&chg->thermal_regulation_work, 0);
+		queue_delayed_work(system_power_efficient_wq, &chg->thermal_regulation_work, 0);
 	}
 
 	if (chg->step_chg_enabled)
@@ -6679,7 +6679,7 @@ irqreturn_t usbin_ov_irq_handler(int irq, void *data)
 	if (stat & USBIN_OV_RT_STS_BIT) {
 		chg->dbc_usbov = true;
 		vote(chg->awake_votable, USBOV_DBC_VOTER, true, 0);
-		schedule_delayed_work(&chg->usbov_dbc_work,
+		queue_delayed_work(system_power_efficient_wq, &chg->usbov_dbc_work,
 				msecs_to_jiffies(USB_OV_DBC_PERIOD_MS));
 	} else {
 		cancel_delayed_work_sync(&chg->usbov_dbc_work);
@@ -7482,7 +7482,7 @@ static void oplus_chg_monitor_work(struct work_struct *work)
 
 rerun_work:
         usb_online_status = false;
-        schedule_delayed_work(&chg->chg_monitor_work, OPLUS_CHG_MONITOR_INTERVAL);
+        queue_delayed_work(system_power_efficient_wq, &chg->chg_monitor_work, OPLUS_CHG_MONITOR_INTERVAL);
 }
 #endif
 
@@ -7520,7 +7520,7 @@ static void oplus_check_camera_and_hotspot_work(struct work_struct *work)
 	if (vbus_rising || chg->typec_mode == POWER_SUPPLY_TYPEC_SOURCE_DEFAULT
 			|| chg->typec_mode == POWER_SUPPLY_TYPEC_SOURCE_MEDIUM
 			|| chg->typec_mode == POWER_SUPPLY_TYPEC_SOURCE_HIGH){
-		schedule_delayed_work(&chg->check_camera_and_hotspot_work, msecs_to_jiffies(2000));
+		queue_delayed_work(system_power_efficient_wq, &chg->check_camera_and_hotspot_work, msecs_to_jiffies(2000));
 	}
 }
 #endif
@@ -10136,7 +10136,7 @@ static int smb5_dr_set_property(struct dual_role_phy_instance *dual_role,
 		if (chg->pr_swap_in_progress && !rc) {
 			cancel_delayed_work_sync(&chg->role_reversal_check);
 			vote(chg->awake_votable, DR_SWAP_VOTER, true, 0);
-			schedule_delayed_work(&chg->role_reversal_check,
+			queue_delayed_work(system_power_efficient_wq, &chg->role_reversal_check,
 				msecs_to_jiffies(ROLE_REVERSAL_DELAY_MS));
 		}
 		break;

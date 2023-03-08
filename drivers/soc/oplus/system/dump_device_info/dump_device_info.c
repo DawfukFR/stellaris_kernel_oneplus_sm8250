@@ -257,7 +257,7 @@ static int __init init_device_info(void)
 	write_device_info("boot command", saved_command_line);
 
 	INIT_DELAYED_WORK(&g_version_info.version_info_work, get_version_info_handle);
-	schedule_delayed_work(&g_version_info.version_info_work, msecs_to_jiffies(GET_VERSION_INFO_TIMEOUT_MS));
+	queue_delayed_work(system_power_efficient_wq, &g_version_info.version_info_work, msecs_to_jiffies(GET_VERSION_INFO_TIMEOUT_MS));
 
 	return ret;
 }

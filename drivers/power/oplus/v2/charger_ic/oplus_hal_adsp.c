@@ -454,7 +454,7 @@ static void oplus_oem_lcm_en_check_work(struct work_struct *work)
 	vph_track_high = 0; /* TODO */
 
 	if (bcdev->oem_usb_online && (enable == last_enable) && (last_vph_track_high == vph_track_high)) {
-		schedule_delayed_work(&bcdev->oem_lcm_en_check_work, round_jiffies_relative(msecs_to_jiffies(5000)));
+		queue_delayed_work(system_power_efficient_wq, &bcdev->oem_lcm_en_check_work, round_jiffies_relative(msecs_to_jiffies(5000)));
 		return;
 	}
 
@@ -467,7 +467,7 @@ static void oplus_oem_lcm_en_check_work(struct work_struct *work)
 	last_vph_track_high = vph_track_high;
 
 	if (bcdev->oem_usb_online) {
-		schedule_delayed_work(&bcdev->oem_lcm_en_check_work, round_jiffies_relative(msecs_to_jiffies(5000)));
+		queue_delayed_work(system_power_efficient_wq, &bcdev->oem_lcm_en_check_work, round_jiffies_relative(msecs_to_jiffies(5000)));
 	}
 }
 
@@ -517,7 +517,7 @@ void oplus_adsp_crash_recover_work(void)
 		return;
 	}
 
-	/* schedule_delayed_work(&bcdev->adsp_crash_recover_work, round_jiffies_relative(msecs_to_jiffies(1500))); */
+	/* queue_delayed_work(system_power_efficient_wq, &bcdev->adsp_crash_recover_work, round_jiffies_relative(msecs_to_jiffies(1500))); */
 }
 EXPORT_SYMBOL(oplus_adsp_crash_recover_work);
 
@@ -541,10 +541,10 @@ static void oplus_adsp_crash_recover_func(struct work_struct *work)
 	chip->voocphy.fastchg_to_warm = false;
 	chip->charger_type  = POWER_SUPPLY_TYPE_UNKNOWN;
 	oplus_voocphy_enable(true);
-	schedule_delayed_work(&bcdev->otg_init_work, 0);
+	queue_delayed_work(system_power_efficient_wq, &bcdev->otg_init_work, 0);
 	oplus_chg_wake_update_work();
-	schedule_delayed_work(&bcdev->voocphy_enable_check_work, round_jiffies_relative(msecs_to_jiffies(0)));
-	schedule_delayed_work(&bcdev->check_charger_out_work, round_jiffies_relative(msecs_to_jiffies(3000)));
+	queue_delayed_work(system_power_efficient_wq, &bcdev->voocphy_enable_check_work, round_jiffies_relative(msecs_to_jiffies(0)));
+	queue_delayed_work(system_power_efficient_wq, &bcdev->check_charger_out_work, round_jiffies_relative(msecs_to_jiffies(3000)));
 }
 
 static void oplus_chg_clear_voocphy_status(struct oplus_chg_chip *chip)
@@ -594,7 +594,7 @@ static void oplus_voocphy_enable_check_func(struct work_struct *work)
 	if (chip->mmi_chg == 0 || chip->charger_exist == false
 		|| chip->charger_type != POWER_SUPPLY_TYPE_USB_DCP) {
 		/*chg_err("is_mmi_chg no_charger_exist no_dcp_type\n");*/
-		schedule_delayed_work(&bcdev->voocphy_enable_check_work, round_jiffies_relative(msecs_to_jiffies(5000)));
+		queue_delayed_work(system_power_efficient_wq, &bcdev->voocphy_enable_check_work, round_jiffies_relative(msecs_to_jiffies(5000)));
 		return;
 	}
 
@@ -602,10 +602,10 @@ static void oplus_voocphy_enable_check_func(struct work_struct *work)
 	if (voocphy_enable == 0) {
 		chg_err("!!!need enable voocphy again\n");
 		rc = oplus_voocphy_enable(true);
-		schedule_delayed_work(&bcdev->voocphy_enable_check_work, round_jiffies_relative(msecs_to_jiffies(500)));
+		queue_delayed_work(system_power_efficient_wq, &bcdev->voocphy_enable_check_work, round_jiffies_relative(msecs_to_jiffies(500)));
 	} else {
 		/*chg_err("!!!enable voocphy ok\n");*/
-		schedule_delayed_work(&bcdev->voocphy_enable_check_work, round_jiffies_relative(msecs_to_jiffies(5000)));
+		queue_delayed_work(system_power_efficient_wq, &bcdev->voocphy_enable_check_work, round_jiffies_relative(msecs_to_jiffies(5000)));
 	}
 }
 #endif
@@ -644,7 +644,7 @@ static void oplus_switch_to_wired_charge(struct battery_chg_dev *bcdev)
 		oplus_wpc_set_wrx_otg_en_value(0);
 
 		cancel_delayed_work_sync(&bcdev->wait_wired_charge_on);
-		schedule_delayed_work(&bcdev->wait_wired_charge_on, msecs_to_jiffies(100));
+		queue_delayed_work(system_power_efficient_wq, &bcdev->wait_wired_charge_on, msecs_to_jiffies(100));
 	}
 }
 
@@ -664,7 +664,7 @@ static void oplus_switch_from_wired_charge(struct battery_chg_dev *bcdev)
 		oplus_wpc_set_ext2_wireless_otg_en_val(0);
 		oplus_wpc_set_wls_pg_value(0);
 		cancel_delayed_work_sync(&bcdev->wait_wired_charge_off);
-		schedule_delayed_work(&bcdev->wait_wired_charge_off, msecs_to_jiffies(100));
+		queue_delayed_work(system_power_efficient_wq, &bcdev->wait_wired_charge_off, msecs_to_jiffies(100));
 	} else {
 		if (oplus_wpc_get_fw_updating() == false)
 			oplus_wpc_dis_wireless_chg(0);
@@ -2403,7 +2403,7 @@ irqreturn_t oplus_vchg_trig_change_handler(int irq, void *data)
 
 	cancel_delayed_work_sync(&bcdev->vchg_trig_work);
 	printk(KERN_ERR "[OPLUS_CHG][%s]: scheduling vchg_trig work!\n", __func__);
-	schedule_delayed_work(&bcdev->vchg_trig_work, msecs_to_jiffies(VCHG_TRIG_DELAY_MS));
+	queue_delayed_work(system_power_efficient_wq, &bcdev->vchg_trig_work, msecs_to_jiffies(VCHG_TRIG_DELAY_MS));
 
 	return IRQ_HANDLED;
 }
@@ -3465,7 +3465,7 @@ static int oplus_chg_8350_otg_boost_enable(struct oplus_chg_ic_dev *ic_dev, bool
 		chg_err("%s otg boost fail, rc=%d\n", en ? "enable" : "disable", rc);
 		return rc;
 	}
-	/* schedule_delayed_work(&bcdev->otg_status_check_work, 0); */
+	/* queue_delayed_work(system_power_efficient_wq, &bcdev->otg_status_check_work, 0); */
 
 	return rc;
 }
@@ -4915,7 +4915,7 @@ static int battery_chg_probe(struct platform_device *pdev)
 	/* oplus_chg_wake_update_work(); */
 
 	if (oplus_vchg_trig_is_support() == true) {
-		schedule_delayed_work(&bcdev->vchg_trig_work, msecs_to_jiffies(3000));
+		queue_delayed_work(system_power_efficient_wq, &bcdev->vchg_trig_work, msecs_to_jiffies(3000));
 		oplus_vchg_trig_irq_register(bcdev);
 	}
 #endif /*OPLUS_FEATURE_CHG_BASIC*/
@@ -4927,8 +4927,8 @@ static int battery_chg_probe(struct platform_device *pdev)
 #ifdef OPLUS_FEATURE_CHG_BASIC
 	/* oplus_chg_set_match_temp_to_voocphy(); */
 	/* oplus_voocphy_enable(true); */
-	/* schedule_delayed_work(&bcdev->otg_init_work, 0); */
-	/* schedule_delayed_work(&bcdev->voocphy_enable_check_work, round_jiffies_relative(msecs_to_jiffies(5000))); */
+	/* queue_delayed_work(system_power_efficient_wq, &bcdev->otg_init_work, 0); */
+	/* queue_delayed_work(system_power_efficient_wq, &bcdev->voocphy_enable_check_work, round_jiffies_relative(msecs_to_jiffies(5000))); */
 	init_debug_reg_proc(bcdev);
 
 	rc = of_property_read_u32(dev->of_node, "oplus,batt_num", &bcdev->batt_num);

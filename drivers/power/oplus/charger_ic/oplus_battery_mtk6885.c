@@ -2559,7 +2559,7 @@ irqreturn_t oplus_ccdetect_change_handler(int irq, void *data)
 	cancel_delayed_work_sync(&ccdetect_work);
 	//smblib_dbg(chg, PR_INTERRUPT, "Scheduling ccdetect work\n");
     printk(KERN_ERR "[OPLUS_CHG][%s]: Scheduling ccdetect work!\n", __func__);
-	schedule_delayed_work(&ccdetect_work,
+	queue_delayed_work(system_power_efficient_wq, &ccdetect_work,
 			msecs_to_jiffies(CCDETECT_DELAY_MS));
 	return IRQ_HANDLED;
 }

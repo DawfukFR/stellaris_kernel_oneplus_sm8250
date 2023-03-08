@@ -2951,7 +2951,7 @@ static void oplus_pps_voter_charging_stop(struct oplus_pps_chip *chip)
 	case PPS_STOP_VOTER_USB_TEMP:
 	case PPS_STOP_VOTER_DISCONNECT_OVER:
 		oplus_chg_set_charger_type_unknown();
-		schedule_delayed_work(&chip->pps_stop_work, 0);
+		queue_delayed_work(system_power_efficient_wq, &chip->pps_stop_work, 0);
 		break;
 	case PPS_STOP_VOTER_FULL:
 	case PPS_STOP_VOTER_TIME_OVER:
@@ -2966,7 +2966,7 @@ static void oplus_pps_voter_charging_stop(struct oplus_pps_chip *chip)
 	case PPS_STOP_VOTER_TDIE_OVER:
 	case PPS_STOP_VOTER_BATCELL_VOL_DIFF:
 	case PPS_STOP_VOTER_CP_ERROR:
-		schedule_delayed_work(&chip->pps_stop_work, 0);
+		queue_delayed_work(system_power_efficient_wq, &chip->pps_stop_work, 0);
 		break;
 	default:
 		break;
@@ -3243,11 +3243,11 @@ static void oplus_pps_update_work(struct work_struct *work)
 		oplus_pps_voter_charging_stop(chip);
 
 		if(chip->pps_stop_status == PPS_STOP_VOTER_NONE)
-			schedule_delayed_work(&chip->update_pps_work, msecs_to_jiffies(chip->timer.work_delay));
+			queue_delayed_work(system_power_efficient_wq, &chip->update_pps_work, msecs_to_jiffies(chip->timer.work_delay));
 	} else {
 		pps_err("pps_type = %d, oplus_pps_get_chg_status:%d\n", pps_type, chg_status);
 		chip->pps_stop_status = PPS_STOP_VOTER_TYPE_ERROR;
-		schedule_delayed_work(&chip->pps_stop_work, 0);
+		queue_delayed_work(system_power_efficient_wq, &chip->pps_stop_work, 0);
 	}
 }
 
@@ -3301,7 +3301,7 @@ static void oplus_pps_stop_work(struct work_struct *work)
 	if (chip->pps_stop_status == PPS_STOP_VOTER_MMI_TEST) {
 		chip->pps_status = OPLUS_PPS_STATUS_START;
 	} else if ((chip->pps_stop_status == PPS_STOP_VOTER_FULL) && (chip->pps_adapter_type == PPS_ADAPTER_OPLUS_V2)) {
-		schedule_delayed_work(&chip->check_vbat_diff_work, PPS_VBAT_DIFF_TIME);
+		queue_delayed_work(system_power_efficient_wq, &chip->check_vbat_diff_work, PPS_VBAT_DIFF_TIME);
 		oplus_chg_unsuspend_charger();
 		oplus_chg_disable_charge();
 		chip->pps_status = OPLUS_PPS_STATUS_FFC;
@@ -3363,7 +3363,7 @@ int oplus_pps_start(int authen)
 	}
 	if (ret)
 		goto fail;
-	schedule_delayed_work(&chip->update_pps_work, 0);
+	queue_delayed_work(system_power_efficient_wq, &chip->update_pps_work, 0);
 
 	return 0;
 

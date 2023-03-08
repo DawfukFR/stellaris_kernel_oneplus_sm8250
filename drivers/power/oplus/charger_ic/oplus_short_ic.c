@@ -421,7 +421,7 @@ static int oplus_short_ic_driver_probe(struct i2c_client *client, const struct i
 	short_ic_chip = chip;
 	INIT_DELAYED_WORK(&chip->oplus_short_ic_init_work, oplus_short_ic_init_work_func);
 	msleep(80);
-	schedule_delayed_work(&chip->oplus_short_ic_init_work, 200);
+	queue_delayed_work(system_power_efficient_wq, &chip->oplus_short_ic_init_work, 200);
 
 	chg_debug("oplus_short_ic success\n");
 	return 0;

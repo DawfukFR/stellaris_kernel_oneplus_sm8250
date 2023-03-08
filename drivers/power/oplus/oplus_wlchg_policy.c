@@ -660,7 +660,7 @@ out:
 	chip->wlchg_status.charge_voltage = chip->wlchg_status.target_vol;
 	mutex_unlock(&chip->chg_lock);
 	chg_err("set targte_vol to %d\n", chip->wlchg_status.target_vol);
-	schedule_delayed_work(&chip->fastchg_curr_vol_work, 0);
+	queue_delayed_work(system_power_efficient_wq, &chip->fastchg_curr_vol_work, 0);
 }
 
 /*
@@ -698,7 +698,7 @@ out:
 	wlchg_rx_set_vout(g_rx_chip, chip->wlchg_status.vol_set);
 	mutex_unlock(&chip->chg_lock);
 	chg_err("set targte_vol to %d\n", chip->wlchg_status.target_vol);
-	schedule_delayed_work(&chip->fastchg_curr_vol_work, 0);
+	queue_delayed_work(system_power_efficient_wq, &chip->fastchg_curr_vol_work, 0);
 }
 
 static int pmic_set_icl_current(int chg_current)
@@ -745,7 +745,7 @@ static int wlchg_set_rx_charge_current_step(struct op_chg_chip *chip,
 		chg_err("<~WPC~> set charge current: %d\n", chg_current);
 		chip->wlchg_status.charge_current = chg_current;
 		cancel_delayed_work_sync(&chip->wlchg_fcc_stepper_work);
-		schedule_delayed_work(&chip->wlchg_fcc_stepper_work, 0);
+		queue_delayed_work(system_power_efficient_wq, &chip->wlchg_fcc_stepper_work, 0);
 		return 0;
 	} else {
 		return -EINVAL;
@@ -1005,10 +1005,10 @@ void wlchg_enable_tx_function(bool is_on)
 			WPC_DISCHG_STATUS_ON;
 		g_op_chip->wireless_mode = WIRELESS_MODE_TX;
 		cancel_delayed_work_sync(&g_op_chip->dischg_work);
-		schedule_delayed_work(&g_op_chip->dischg_work,
+		queue_delayed_work(system_power_efficient_wq, &g_op_chip->dischg_work,
 					  WPC_DISCHG_WAIT_READY_EVENT);
 		cancel_delayed_work_sync(&g_op_chip->tx_check_work);
-		schedule_delayed_work(&g_op_chip->tx_check_work,
+		queue_delayed_work(system_power_efficient_wq, &g_op_chip->tx_check_work,
 					  msecs_to_jiffies(500));
 		chg_err("<~WPC~> Enable rtx end!\n");
 	} else {
@@ -1172,7 +1172,7 @@ static void fastchg_curr_control_en(struct op_chg_chip *chip, bool enable)
 	if (enable) {
 		chg_status->curr_limit_mode = true;
 		chg_status->curr_need_dec = false;
-		schedule_delayed_work(&chip->fastchg_curr_vol_work, 0);
+		queue_delayed_work(system_power_efficient_wq, &chip->fastchg_curr_vol_work, 0);
 	} else {
 		chg_status->curr_limit_mode = false;
 	}
@@ -1271,7 +1271,7 @@ static void wlchg_fcc_stepper_work(struct work_struct *work)
 		return;
 	}
 	if (ffc_tmp != target_curr_ua)
-		schedule_delayed_work(&chip->wlchg_fcc_stepper_work,
+		queue_delayed_work(system_power_efficient_wq, &chip->wlchg_fcc_stepper_work,
 				msecs_to_jiffies(FFC_STEP_TIME_MS));
 }
 
@@ -3628,7 +3628,7 @@ freq_check_done:
 		if ((chip->icharging > 5600) &&
 		    (chip->w30w_work_started == false)) {
 			chip->w30w_work_started = true;
-			schedule_delayed_work(
+			queue_delayed_work(system_power_efficient_wq, 
 				&chip->w30w_timeout_work,
 				round_jiffies_relative(msecs_to_jiffies(
 					(chip->w30w_time) * 60 * 1000)));
@@ -3823,7 +3823,7 @@ void wlchg_dischg_status(struct op_chg_chip *chip)
 			chip->wlchg_status.wpc_dischg_status =
 				WPC_DISCHG_IC_READY;
 			wlchg_rx_trx_enbale(g_rx_chip, true);
-			schedule_delayed_work(&chip->dischg_work, WPC_DISCHG_WAIT_READY_EVENT);
+			queue_delayed_work(system_power_efficient_wq, &chip->dischg_work, WPC_DISCHG_WAIT_READY_EVENT);
 			trycount = 0;
 		} else if (TRX_DIGITALPING & tx_status ||
 			   TRX_ANALOGPING & tx_status) {
@@ -3834,14 +3834,14 @@ void wlchg_dischg_status(struct op_chg_chip *chip)
 				chip->wlchg_status.wpc_dischg_status = WPC_DISCHG_STATUS_OFF;
 			} else {
 				chip->wlchg_status.wpc_dischg_status = WPC_DISCHG_IC_PING_DEVICE;
-				schedule_delayed_work(&chip->dischg_work, WPC_DISCHG_WAIT_DEVICE_EVENT);
+				queue_delayed_work(system_power_efficient_wq, &chip->dischg_work, WPC_DISCHG_WAIT_DEVICE_EVENT);
 				chg_err("<~WPC~>rtx func waiting device 60s......\n");
 			}
 		} else if (TRX_TRANSFER & tx_status) {
 			chip->wlchg_status.wpc_dischg_status = WPC_DISCHG_IC_TRANSFER;
 			chip->wlchg_status.tx_online = true;
 			// check status per 5s if in IC_TRANSFER.
-			schedule_delayed_work(&chip->dischg_work, WPC_DISCHG_POLL_STATUS_EVENT);
+			queue_delayed_work(system_power_efficient_wq, &chip->dischg_work, WPC_DISCHG_POLL_STATUS_EVENT);
 			chg_err("<~WPC~>rtx func in discharging now, check status 5 seconds later!\n");
 		}
 		if (chip->wireless_psy != NULL) {
@@ -3871,7 +3871,7 @@ void wlchg_dischg_status(struct op_chg_chip *chip)
 			chip->wlchg_status.wpc_dischg_status =
 				WPC_DISCHG_STATUS_OFF;
 		}
-		schedule_delayed_work(&chip->dischg_work, WPC_DISCHG_WAIT_STATUS_EVENT);
+		queue_delayed_work(system_power_efficient_wq, &chip->dischg_work, WPC_DISCHG_WAIT_STATUS_EVENT);
 	}
 
 	return;
@@ -3978,16 +3978,16 @@ static void wlchg_connect_func(struct op_chg_chip *chip)
 		wlchg_init_connected_task(chip);
 		op_set_wrx_en_value(2);
 		wlchg_rx_get_run_flag(g_rx_chip);
-		schedule_delayed_work(&chip->update_bat_info_work, 0);
-		schedule_delayed_work(&chip->wlchg_task_work, 0);
-		//schedule_delayed_work(&chip->fastchg_curr_vol_work, 0);
+		queue_delayed_work(system_power_efficient_wq, &chip->update_bat_info_work, 0);
+		queue_delayed_work(system_power_efficient_wq, &chip->wlchg_task_work, 0);
+		//queue_delayed_work(system_power_efficient_wq, &chip->fastchg_curr_vol_work, 0);
 		wlchg_set_rx_charge_current(chip, WPC_CHARGE_CURRENT_INIT_100MA);
 		chip->wlchg_status.startup_fast_chg = true;
 		wlchg_send_msg(WLCHG_MSG_CHG_INFO, 5, WLCHG_ADAPTER_MSG);
 		exfg_instance->set_allow_reading(true);
 	} else {
 		chg_info("reverse charge did not exit, wait 100ms\n");
-		schedule_delayed_work(&chip->wlchg_connect_check_work, msecs_to_jiffies(100));
+		queue_delayed_work(system_power_efficient_wq, &chip->wlchg_connect_check_work, msecs_to_jiffies(100));
 	}
 }
 
@@ -4071,7 +4071,7 @@ static void wlchg_disconnect_func(struct op_chg_chip *chip)
 			delay_time = 0;
 		else
 			delay_time = delay_time - jiffies;
-		schedule_delayed_work(&chip->charger_exit_work, delay_time);
+		queue_delayed_work(system_power_efficient_wq, &chip->charger_exit_work, delay_time);
 	} else {
 		if (chip->wlchg_wake_lock_on) {
 			chg_info("release wlchg_wake_lock\n");
@@ -4186,7 +4186,7 @@ static void wlchg_usbin_int_func(struct work_struct *work)
 		}
 		msleep(100);
 		wlchg_enable_tx_function(false);
-		schedule_delayed_work(&chip->wait_wpc_chg_quit, 0);
+		queue_delayed_work(system_power_efficient_wq, &chip->wait_wpc_chg_quit, 0);
 	} else {
 		if (!chip->disable_charge)
 			wlchg_rx_set_chip_sleep(0);
@@ -4242,10 +4242,10 @@ static void wlchg_usbin_int_shedule_work(void)
 	} else {
 		cancel_delayed_work(&g_op_chip->usbin_int_work);
 		if (!g_op_chip->pd_charger_online)
-			schedule_delayed_work(&g_op_chip->usbin_int_work, 0);
+			queue_delayed_work(system_power_efficient_wq, &g_op_chip->usbin_int_work, 0);
 		else {
 			chg_info("PD is in, usbin irq work func delay 1 seconds run.");
-			schedule_delayed_work(&g_op_chip->usbin_int_work, WLCHG_PD_HARDRESET_WAIT_TIME);
+			queue_delayed_work(system_power_efficient_wq, &g_op_chip->usbin_int_work, WLCHG_PD_HARDRESET_WAIT_TIME);
 		}
 	}
 	chg_err("usbin irq happened\n");
@@ -4707,7 +4707,7 @@ static void op_wait_wpc_chg_quit_work(struct work_struct *work)
 		if (wpc_con_level == 0 || wpc_chg_quit_max_cnt >= 5) {
 			chargepump_disable();
 		} else {
-			schedule_delayed_work(&chip->wait_wpc_chg_quit,
+			queue_delayed_work(system_power_efficient_wq, &chip->wait_wpc_chg_quit,
 					      msecs_to_jiffies(500));
 			wpc_chg_quit_max_cnt++;
 		}
@@ -4809,13 +4809,13 @@ static void wlchg_task_work_process(struct work_struct *work)
 			if ((chg_status->temp_region == WLCHG_BATT_TEMP_COLD ||
 			chg_status->temp_region == WLCHG_BATT_TEMP_HOT) &&
 				chg_status->charge_current == 0) {
-				schedule_delayed_work(&chip->wlchg_task_work, msecs_to_jiffies(5000));
+				queue_delayed_work(system_power_efficient_wq, &chip->wlchg_task_work, msecs_to_jiffies(5000));
 			} else {
 				if (chg_status->startup_fast_chg)
-					schedule_delayed_work(&chip->wlchg_task_work,
+					queue_delayed_work(system_power_efficient_wq, &chip->wlchg_task_work,
 							msecs_to_jiffies(100));
 				else
-					schedule_delayed_work(&chip->wlchg_task_work,
+					queue_delayed_work(system_power_efficient_wq, &chip->wlchg_task_work,
 							WLCHG_TASK_INTERVAL);
 			}
 		}
@@ -4978,10 +4978,10 @@ static void curr_vol_check_process(struct work_struct *work)
 
 	if (chg_status->charge_online) {
 		if (chg_status->curr_limit_mode)
-			schedule_delayed_work(&chip->fastchg_curr_vol_work,
+			queue_delayed_work(system_power_efficient_wq, &chip->fastchg_curr_vol_work,
 				msecs_to_jiffies(500));
 		else
-			schedule_delayed_work(&chip->fastchg_curr_vol_work,
+			queue_delayed_work(system_power_efficient_wq, &chip->fastchg_curr_vol_work,
 				msecs_to_jiffies(100));
 	}
 }
@@ -5004,7 +5004,7 @@ static void wlchg_tx_check_process(struct work_struct *work)
 			g_op_chip->otg_switch = false;
 			wlchg_enable_tx_function(false);
 		}
-		schedule_delayed_work(&chip->tx_check_work, msecs_to_jiffies(500));
+		queue_delayed_work(system_power_efficient_wq, &chip->tx_check_work, msecs_to_jiffies(500));
 	} else {
 		chg_err("<~WPC~ wireless mode is %d, not TX, exit.", chip->wireless_mode);
 	}
@@ -5076,7 +5076,7 @@ static void exfg_update_batinfo(struct work_struct *work)
 	}
 	/* run again after interval */
 	if (chip && chip->wlchg_status.charge_online) {
-		schedule_delayed_work(&chip->update_bat_info_work,
+		queue_delayed_work(system_power_efficient_wq, &chip->update_bat_info_work,
 				      WLCHG_BATINFO_UPDATE_INTERVAL);
 	}
 }

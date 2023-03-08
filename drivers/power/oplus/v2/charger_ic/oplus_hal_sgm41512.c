@@ -403,7 +403,7 @@ static int sgm41512_enable_hiz_mode(struct sgm41512_chip *chip, bool en)
 
 	cancel_delayed_work_sync(&chip->bc12_timeout_work);
 	if (!en)
-		schedule_delayed_work(&chip->bc12_timeout_work,
+		queue_delayed_work(system_power_efficient_wq, &chip->bc12_timeout_work,
 				      BC12_TIMEOUT_MS);
 
 	return 0;

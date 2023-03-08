@@ -182,7 +182,7 @@ static void tcpc_get_adapter_svid(struct pd_manager_chip *chip)
 	}
 
 	if (chip->pd_svooc)
-		schedule_delayed_work(&chip->vconn_wait_work,
+		queue_delayed_work(system_power_efficient_wq, &chip->vconn_wait_work,
 				      msecs_to_jiffies(VCONN_TIMEOUT_MS));
 	else
 		oplus_chg_ic_virq_trigger(chip->ic_dev, OPLUS_IC_VIRQ_SVID);
@@ -262,7 +262,7 @@ static inline void start_usb_peripheral(struct pd_manager_chip *chip)
 	if (!chip->bc12_completed) {
 		chg_info("wait bc1.2 completed\n");
 		chip->start_peripheral = true;
-		schedule_delayed_work(&chip->bc12_wait_work,
+		queue_delayed_work(system_power_efficient_wq, &chip->bc12_wait_work,
 				      msecs_to_jiffies(BC12_TIMEOUT_MS));
 		return;
 	}
@@ -339,7 +339,7 @@ static void usb_dwork_handler(struct work_struct *work)
 		if (!chip->bc12_ready || chip->chg_type == OPLUS_CHG_USB_TYPE_UNKNOWN) {
 			if (chip->usb_type_polling_cnt <
 			    USB_TYPE_POLLING_CNT_MAX)
-				schedule_delayed_work(
+				queue_delayed_work(system_power_efficient_wq, 
 					&chip->usb_dwork,
 					msecs_to_jiffies(
 						USB_TYPE_POLLING_INTERVAL));
@@ -555,7 +555,7 @@ static int pd_tcp_notifier_call(struct notifier_block *nb, unsigned long event,
 			cancel_delayed_work_sync(&chip->usb_dwork);
 			chip->usb_dr = DR_DEVICE;
 			chip->usb_type_polling_cnt = 0;
-			schedule_delayed_work(
+			queue_delayed_work(system_power_efficient_wq, 
 				&chip->usb_dwork,
 				msecs_to_jiffies(USB_TYPE_POLLING_INTERVAL));
 			tcpc_set_data_role(chip, TYPEC_DEVICE);
@@ -582,7 +582,7 @@ static int pd_tcp_notifier_call(struct notifier_block *nb, unsigned long event,
 			chip->pd_svooc = false;
 			cancel_delayed_work_sync(&chip->usb_dwork);
 			chip->usb_dr = DR_IDLE;
-			schedule_delayed_work(&chip->usb_dwork, 0);
+			queue_delayed_work(system_power_efficient_wq, &chip->usb_dwork, 0);
 		} else if (old_state == TYPEC_UNATTACHED &&
 			   (new_state == TYPEC_ATTACHED_SRC ||
 			    new_state == TYPEC_ATTACHED_DEBUG)) {
@@ -591,7 +591,7 @@ static int pd_tcp_notifier_call(struct notifier_block *nb, unsigned long event,
 			/* enable host connection */
 			cancel_delayed_work_sync(&chip->usb_dwork);
 			chip->usb_dr = DR_HOST;
-			schedule_delayed_work(&chip->usb_dwork, 0);
+			queue_delayed_work(system_power_efficient_wq, &chip->usb_dwork, 0);
 			tcpc_set_data_role(chip, TYPEC_HOST);
 			typec_set_pwr_role(chip->typec_port, TYPEC_SOURCE);
 			switch (noti->typec_state.local_rp_level) {
@@ -615,7 +615,7 @@ static int pd_tcp_notifier_call(struct notifier_block *nb, unsigned long event,
 			/* disable host connection */
 			cancel_delayed_work_sync(&chip->usb_dwork);
 			chip->usb_dr = DR_IDLE;
-			schedule_delayed_work(&chip->usb_dwork, 0);
+			queue_delayed_work(system_power_efficient_wq, &chip->usb_dwork, 0);
 		} else if (old_state == TYPEC_UNATTACHED &&
 			   new_state == TYPEC_ATTACHED_AUDIO) {
 			chg_info("Audio plug in\n");
@@ -741,7 +741,7 @@ static int pd_tcp_notifier_call(struct notifier_block *nb, unsigned long event,
 			 */
 			cancel_delayed_work_sync(&chip->usb_dwork);
 			chip->usb_dr = DR_HOST_TO_DEVICE;
-			schedule_delayed_work(&chip->usb_dwork, 0);
+			queue_delayed_work(system_power_efficient_wq, &chip->usb_dwork, 0);
 			tcpc_set_data_role(chip, TYPEC_DEVICE);
 		} else if (noti->swap_state.new_role == PD_ROLE_DFP) {
 			chg_info("swap data role to host\n");
@@ -751,7 +751,7 @@ static int pd_tcp_notifier_call(struct notifier_block *nb, unsigned long event,
 			 */
 			cancel_delayed_work_sync(&chip->usb_dwork);
 			chip->usb_dr = DR_DEVICE_TO_HOST;
-			schedule_delayed_work(&chip->usb_dwork, 0);
+			queue_delayed_work(system_power_efficient_wq, &chip->usb_dwork, 0);
 			tcpc_set_data_role(chip, TYPEC_HOST);
 		}
 		break;
@@ -765,7 +765,7 @@ static int pd_tcp_notifier_call(struct notifier_block *nb, unsigned long event,
 			chg_info("swap vconn role to off\n");
 			typec_set_vconn_role(chip->typec_port, TYPEC_SINK);
 			cancel_delayed_work_sync(&chip->vconn_wait_work);
-			schedule_delayed_work(&chip->vconn_wait_work, 0);
+			queue_delayed_work(system_power_efficient_wq, &chip->vconn_wait_work, 0);
 		}
 		break;
 	case TCP_NOTIFY_EXT_DISCHARGE:

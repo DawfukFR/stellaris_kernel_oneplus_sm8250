@@ -418,7 +418,7 @@ int chargepump_enable(void)
 
 	if (chargepump_ic != NULL) {
 		chargepump_set_chargepump_en_val(chargepump_ic, 1);
-		schedule_delayed_work(&chargepump_ic->watch_dog_work, msecs_to_jiffies(1000));
+		queue_delayed_work(system_power_efficient_wq, &chargepump_ic->watch_dog_work, msecs_to_jiffies(1000));
 		return ret;
 	} else {
 		chg_err(" chargepump_ic is NULL!\n");
@@ -655,7 +655,7 @@ static void watch_dog_work(struct work_struct *work)
 			pr_err("feeding the watch dog error again\n");
 	}
 
-	schedule_delayed_work(&chip->watch_dog_work,  msecs_to_jiffies(100000));
+	queue_delayed_work(system_power_efficient_wq, &chip->watch_dog_work,  msecs_to_jiffies(100000));
 }
 
 

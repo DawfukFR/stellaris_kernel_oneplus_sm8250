@@ -1476,7 +1476,7 @@ static irqreturn_t bq24190_irq_handler_fn(int irq, void *dev_id)
 	if(fg_bq24190_irq_delay_work_running == false)
 	{
 		fg_bq24190_irq_delay_work_running = true;
-	    schedule_delayed_work(&bq24190_irq_delay_work, round_jiffies_relative(msecs_to_jiffies(50)));
+	    queue_delayed_work(system_power_efficient_wq, &bq24190_irq_delay_work, round_jiffies_relative(msecs_to_jiffies(50)));
 	}
 
 	return IRQ_HANDLED;
@@ -1536,7 +1536,7 @@ static int bq24190_driver_probe(struct i2c_client *client, const struct i2c_devi
 	register_charger_devinfo();
 	usleep_range(1000, 1200);
 	INIT_DELAYED_WORK(&charger_modefy_work, do_charger_modefy_work);
-	schedule_delayed_work(&charger_modefy_work, 0);
+	queue_delayed_work(system_power_efficient_wq, &charger_modefy_work, 0);
     return 0;
 
 }

@@ -714,7 +714,7 @@ static void oplus_wired_pd_config_work(struct work_struct *work)
 			if (rc < 0) {
 				if (chip->pd_retry_count < PD_RETRY_COUNT_MAX) {
 					chip->pd_retry_count++;
-					schedule_delayed_work(
+					queue_delayed_work(system_power_efficient_wq, 
 						&chip->pd_config_work,
 						PD_RETRY_DELAY);
 					return;
@@ -853,7 +853,7 @@ static void oplus_wired_gauge_update_work(struct work_struct *work)
 			schedule_work(&chip->qc_config_work);
 		} else if (chip->chg_mode == OPLUS_WIRED_CHG_MODE_PD) {
 			chip->pd_action = OPLUS_ACTION_BUCK;
-			schedule_delayed_work(&chip->pd_config_work, 0);
+			queue_delayed_work(system_power_efficient_wq, &chip->pd_config_work, 0);
 		}
 	}
 
@@ -1102,7 +1102,7 @@ static void oplus_wired_chg_type_change_work(struct work_struct *work)
 	case OPLUS_CHG_USB_TYPE_PD_PPS:
 		chip->chg_mode = OPLUS_WIRED_CHG_MODE_PD;
 		chip->pd_action = OPLUS_ACTION_BOOST;
-		schedule_delayed_work(&chip->pd_config_work, 0);
+		queue_delayed_work(system_power_efficient_wq, &chip->pd_config_work, 0);
 		break;
 	default:
 		oplus_wired_current_set(chip, false);

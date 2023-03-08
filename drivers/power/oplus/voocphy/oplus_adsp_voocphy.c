@@ -103,7 +103,7 @@ static void oplus_voocphy_check_charger_out_work_func(struct work_struct *work)
 static void oplus_voocphy_check_charger_out(struct oplus_voocphy_manager *chip)
 {
 	printk(KERN_ERR "%s\n", __func__);
-	schedule_delayed_work(&chip->voocphy_check_charger_out_work,
+	queue_delayed_work(system_power_efficient_wq, &chip->voocphy_check_charger_out_work,
 		round_jiffies_relative(msecs_to_jiffies(TIME_3SEC)));
 }
 

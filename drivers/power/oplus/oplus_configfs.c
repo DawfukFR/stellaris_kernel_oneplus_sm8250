@@ -1561,7 +1561,7 @@ static ssize_t parallel_chg_mos_test_show(struct device *dev, struct device_attr
 	}
 	if (!chip->mos_test_result) {
 		if (!chip->mos_test_started)
-			schedule_delayed_work(&chip->parallel_chg_mos_test_work, 0);
+			queue_delayed_work(system_power_efficient_wq, &chip->parallel_chg_mos_test_work, 0);
 	}
 	else {
 		chg_err("mos test success, use last result!\n");

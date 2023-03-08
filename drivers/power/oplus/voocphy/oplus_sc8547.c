@@ -287,7 +287,7 @@ static int sc8547_track_upload_i2c_err_info(
 	index += snprintf(&(chip->i2c_err_load_trigger->crux_info[index]),
 			OPLUS_CHG_TRACK_CURX_INFO_LEN - index,
 			"$$access_reg@@0x%02x", reg);
-	schedule_delayed_work(&chip->i2c_err_load_trigger_work, 0);
+	queue_delayed_work(system_power_efficient_wq, &chip->i2c_err_load_trigger_work, 0);
 	mutex_unlock(&chip->track_upload_lock);
 	pr_info("success\n");
 
@@ -420,7 +420,7 @@ static int sc8547_track_upload_cp_err_info(
 	index += snprintf(&(chip->cp_err_load_trigger->crux_info[index]),
 			OPLUS_CHG_TRACK_CURX_INFO_LEN - index,
 			"$$reg_info@@%s", chip->dump_info);
-	schedule_delayed_work(&chip->cp_err_load_trigger_work, 0);
+	queue_delayed_work(system_power_efficient_wq, &chip->cp_err_load_trigger_work, 0);
 	mutex_unlock(&chip->track_upload_lock);
 	pr_info("success\n");
 

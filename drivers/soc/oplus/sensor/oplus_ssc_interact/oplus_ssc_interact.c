@@ -443,7 +443,7 @@ static void ssc_regiseter_lcd_notify_work(struct work_struct *work)
 
 	if (!g_ssc_cxt->notify_work_regiseted && g_ssc_cxt->notify_work_retry > 0) {
 		g_ssc_cxt->notify_work_retry--;
-		schedule_delayed_work(&g_ssc_cxt->regiseter_lcd_notify_work, msecs_to_jiffies(1000));
+		queue_delayed_work(system_power_efficient_wq, &g_ssc_cxt->regiseter_lcd_notify_work, msecs_to_jiffies(1000));
 	}
 	return;
 }
@@ -493,7 +493,7 @@ static int __init ssc_interactive_init(void)
 			ssc_cxt->notify_work_retry = 10;
 			ssc_cxt->notify_work_regiseted = false;
 			INIT_DELAYED_WORK(&ssc_cxt->regiseter_lcd_notify_work, ssc_regiseter_lcd_notify_work);
-			schedule_delayed_work(&ssc_cxt->regiseter_lcd_notify_work, msecs_to_jiffies(1500));
+			queue_delayed_work(system_power_efficient_wq, &ssc_cxt->regiseter_lcd_notify_work, msecs_to_jiffies(1500));
 #else
 			ssc_cxt->nb.notifier_call = lcdinfo_callback;
 			register_lcdinfo_notifier(&ssc_cxt->nb);

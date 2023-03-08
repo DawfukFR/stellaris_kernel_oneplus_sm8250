@@ -865,7 +865,7 @@ static void bq2591x_monitor_workfunc(struct work_struct *work)
 
 	//bq2591x_dump_register(bq);
 	
-	schedule_delayed_work(&bq->monitor_work, 5 * HZ);
+	queue_delayed_work(system_power_efficient_wq, &bq->monitor_work, 5 * HZ);
 }
 
 

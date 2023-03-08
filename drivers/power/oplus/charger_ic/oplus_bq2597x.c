@@ -2299,7 +2299,7 @@ static void oplus_cp_lc_func(struct work_struct *work) {
 static irqreturn_t irq_rx_handler(int irq, void *dev_id) {
 	struct bq2597x *bq = charger_ic;
 	if (0)
-		schedule_delayed_work(&bq->cp_lc_work, 0);
+		queue_delayed_work(system_power_efficient_wq, &bq->cp_lc_work, 0);
 
 	return IRQ_HANDLED;
 }

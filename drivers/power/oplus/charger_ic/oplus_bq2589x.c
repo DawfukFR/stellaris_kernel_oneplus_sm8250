@@ -1453,7 +1453,7 @@ static irqreturn_t bq2589x_irq_handler(int irq, void *data)
 				chg_debug(" not dcp.");
 			}
 
-			schedule_delayed_work(&bq->bq2589x_hvdcp_bc12_work, msecs_to_jiffies(1500));
+			queue_delayed_work(system_power_efficient_wq, &bq->bq2589x_hvdcp_bc12_work, msecs_to_jiffies(1500));
 		} else if (bq->hvdcp_checked) {
 			chg_info(" bq2589x hvdcp is checked");
 
@@ -1463,7 +1463,7 @@ static irqreturn_t bq2589x_irq_handler(int irq, void *data)
 			}
 
 			/*restart AICL after the BC1.2 of HDVCP check*/
-			schedule_delayed_work(&bq->bq2589x_aicr_setting_work, 0);
+			queue_delayed_work(system_power_efficient_wq, &bq->bq2589x_aicr_setting_work, 0);
 			oplus_chg_wake_update_work();
 		} else {
 			chg_err("oplus_chg_type = %d, hvdcp_checked = %d", bq->oplus_chg_type, bq->hvdcp_checked);
@@ -1550,7 +1550,7 @@ static int bq2589x_init_device(struct bq2589x *bq)
 		INIT_DELAYED_WORK(&bq->enter_hz_work, bq2589x_enter_hz_work_handler);
 
 		/*Stop charging for META BOOT after the ELT&ETS ports is enable */
-		schedule_delayed_work(&bq->enter_hz_work, 0);
+		queue_delayed_work(system_power_efficient_wq, &bq->enter_hz_work, 0);
 	}
 
 	return 0;
@@ -2980,7 +2980,7 @@ int oplus_bq2589x_set_qc_config(void)
 			qc_to_9v_count = 0;
 			if (g_bq->is_bc12_end) {
                                 g_bq->is_bc12_end = false;
-				schedule_delayed_work(&g_bq->bq2589x_vol_convert_work, 0);
+				queue_delayed_work(system_power_efficient_wq, &g_bq->bq2589x_vol_convert_work, 0);
 			}
 		}
 	} else { /* 9v */
@@ -2997,7 +2997,7 @@ int oplus_bq2589x_set_qc_config(void)
 			} else {
 				if (g_bq->is_bc12_end) {
 					g_bq->is_bc12_end = false;
-					schedule_delayed_work(&g_bq->bq2589x_vol_convert_work, 0);
+					queue_delayed_work(system_power_efficient_wq, &g_bq->bq2589x_vol_convert_work, 0);
 				}
 				qc_to_9v_count++;
 			}
@@ -3171,14 +3171,14 @@ RECHECK:
 			bq->chg_type = STANDARD_HOST;
 			if (!bq->sdp_retry) {
 				bq->sdp_retry = true;
-				schedule_delayed_work(&g_bq->bq2589x_retry_adapter_detection, OPLUS_BC12_RETRY_TIME);
+				queue_delayed_work(system_power_efficient_wq, &g_bq->bq2589x_retry_adapter_detection, OPLUS_BC12_RETRY_TIME);
 			}
 			break;
 		case BQ2589X_VBUS_TYPE_CDP:
 			bq->chg_type = CHARGING_HOST;
 			if (!bq->cdp_retry) {
 				bq->cdp_retry = true;
-				schedule_delayed_work(&bq->bq2589x_retry_adapter_detection, OPLUS_BC12_RETRY_TIME_CDP);
+				queue_delayed_work(system_power_efficient_wq, &bq->bq2589x_retry_adapter_detection, OPLUS_BC12_RETRY_TIME_CDP);
 			}
 			break;
 		case BQ2589X_VBUS_TYPE_DCP:
@@ -3638,7 +3638,7 @@ static int bq2589x_charger_probe(struct i2c_client *client,
 	determine_initial_status(bq);
 
 	if (strcmp(bq->chg_dev_name, "primary_chg") == 0) {
-		schedule_delayed_work(&bq->init_work, msecs_to_jiffies(14000));
+		queue_delayed_work(system_power_efficient_wq, &bq->init_work, msecs_to_jiffies(14000));
 
 #ifdef CONFIG_TCPC_CLASS
 		bq->tcpc = tcpc_dev_get_by_name("type_c_port0");

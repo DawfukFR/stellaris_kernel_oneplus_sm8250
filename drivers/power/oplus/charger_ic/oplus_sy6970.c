@@ -1680,7 +1680,7 @@ static irqreturn_t sy6970_irq_handler(int irq, void *data)
 				chg_debug(" not dcp.");
 			}
 
-			schedule_delayed_work(&bq->sy6970_hvdcp_bc12_work, msecs_to_jiffies(1500));
+			queue_delayed_work(system_power_efficient_wq, &bq->sy6970_hvdcp_bc12_work, msecs_to_jiffies(1500));
 		} else if (bq->hvdcp_checked) {
 			chg_info(" sy6970 hvdcp is checked");
 
@@ -1690,7 +1690,7 @@ static irqreturn_t sy6970_irq_handler(int irq, void *data)
 			}
 
 			/*restart AICL after the BC1.2 of HDVCP check*/
-			schedule_delayed_work(&bq->sy6970_aicr_setting_work, 0);
+			queue_delayed_work(system_power_efficient_wq, &bq->sy6970_aicr_setting_work, 0);
 			oplus_chg_wake_update_work();
 		} else {
 			chg_err("oplus_chg_type = %d, hvdcp_checked = %d", bq->oplus_chg_type, bq->hvdcp_checked);
@@ -3272,7 +3272,7 @@ int oplus_sy6970_set_qc_config(void)
 			if (g_bq->is_bc12_end) {
                                 g_bq->is_bc12_end = false;
 				g_bq->qc_aicl_true = false;
-				schedule_delayed_work(&g_bq->sy6970_vol_convert_work, 0);
+				queue_delayed_work(system_power_efficient_wq, &g_bq->sy6970_vol_convert_work, 0);
 			} else {
 				ret = -1;
 			}
@@ -3299,7 +3299,7 @@ int oplus_sy6970_set_qc_config(void)
 			if (g_bq->is_bc12_end) {
 				g_bq->is_bc12_end = false;
 				g_bq->qc_aicl_true = false;
-				schedule_delayed_work(&g_bq->sy6970_vol_convert_work, 0);
+				queue_delayed_work(system_power_efficient_wq, &g_bq->sy6970_vol_convert_work, 0);
 			} else {
 				ret = -1;
 			}
@@ -3455,14 +3455,14 @@ RECHECK:
 			bq->chg_type = STANDARD_HOST;
 			if (!bq->sdp_retry) {
 				bq->sdp_retry = true;
-				schedule_delayed_work(&g_bq->sy6970_retry_adapter_detection, OPLUS_BC12_RETRY_TIME);
+				queue_delayed_work(system_power_efficient_wq, &g_bq->sy6970_retry_adapter_detection, OPLUS_BC12_RETRY_TIME);
 			}
 			break;
 		case SY6970_VBUS_TYPE_CDP:
 			bq->chg_type = CHARGING_HOST;
 			if (!bq->cdp_retry) {
 				bq->cdp_retry = true;
-				schedule_delayed_work(&bq->sy6970_retry_adapter_detection, OPLUS_BC12_RETRY_TIME_CDP);
+				queue_delayed_work(system_power_efficient_wq, &bq->sy6970_retry_adapter_detection, OPLUS_BC12_RETRY_TIME_CDP);
 			}
 			break;
 		case SY6970_VBUS_TYPE_DCP:
@@ -3901,7 +3901,7 @@ static int sy6970_charger_probe(struct i2c_client *client,
 		INIT_DELAYED_WORK(&bq->enter_hz_work, sy6970_enter_hz_work_handler); */
 
 		/* Stop charging for META BOOT after the ELT&ETS ports is enable */
-		/* schedule_delayed_work(&bq->enter_hz_work, 0); */
+		/* queue_delayed_work(system_power_efficient_wq, &bq->enter_hz_work, 0); */
         }
 #else
         if (oplus_is_rf_ftm_mode()) {
@@ -3910,7 +3910,7 @@ static int sy6970_charger_probe(struct i2c_client *client,
 		/* sy6970_disable_charger(bq);
 
 		INIT_DELAYED_WORK(&bq->enter_hz_work, sy6970_enter_hz_work_handler);
-		schedule_delayed_work(&bq->enter_hz_work, msecs_to_jiffies(10000)); */
+		queue_delayed_work(system_power_efficient_wq, &bq->enter_hz_work, msecs_to_jiffies(10000)); */
         }
 #endif
 	if (strcmp(bq->chg_dev_name, "primary_chg") == 0) {
@@ -3918,7 +3918,7 @@ static int sy6970_charger_probe(struct i2c_client *client,
 		* The init_work of bc1.2 shall be after the usbphy is ready,
 		* otherwise the adb will not work when reboot with usb plug in.
 		*/
-		/*schedule_delayed_work(&bq->init_work, msecs_to_jiffies(6000));*/
+		/*queue_delayed_work(system_power_efficient_wq, &bq->init_work, msecs_to_jiffies(6000));*/
 	}
 
 	if(bq->is_sy6970 == true) {

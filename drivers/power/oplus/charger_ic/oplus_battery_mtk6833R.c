@@ -981,7 +981,7 @@ void mtk_charger_int_handler(void)
 				pinfo->step_status_pre = STEP_CHG_STATUS_INVALID;
 				pinfo->step_cnt = 0;
 				pinfo->step_chg_current = pinfo->data.step1_current_ma;
-				schedule_delayed_work(&pinfo->step_charging_work, msecs_to_jiffies(5000));
+				queue_delayed_work(system_power_efficient_wq, &pinfo->step_charging_work, msecs_to_jiffies(5000));
 			}
 		} else {
 			pr_err("%s, Charger Plug Out\n", __func__);
@@ -4501,7 +4501,7 @@ static void mt6360_step_charging_work(struct work_struct *work)
 			}
 		}
 
-		schedule_delayed_work(&pinfo->step_charging_work, msecs_to_jiffies(5000));
+		queue_delayed_work(system_power_efficient_wq, &pinfo->step_charging_work, msecs_to_jiffies(5000));
 	}
 
 	return;
@@ -5227,9 +5227,9 @@ void oplus_adc_switch_update_work(struct work_struct *work)
 	}
 	oplus_chg_adc_switch_ctrl();
 	if (!oplus_voocphy_get_fastchg_start()) {
-		schedule_delayed_work(&adc_switch_update_work, msecs_to_jiffies(5000));
+		queue_delayed_work(system_power_efficient_wq, &adc_switch_update_work, msecs_to_jiffies(5000));
 	} else {
-		schedule_delayed_work(&adc_switch_update_work, msecs_to_jiffies(800));
+		queue_delayed_work(system_power_efficient_wq, &adc_switch_update_work, msecs_to_jiffies(800));
 	}
 }
 #endif /* OPLUS_FEATURE_CHG_BASIC */
@@ -5323,7 +5323,7 @@ static int mtk_charger_probe(struct platform_device *pdev)
 	oplus_chg_ntc_init(oplus_chip);
 	if (oplus_ntc_ctrl_is_support()) {
 		INIT_DELAYED_WORK(&adc_switch_update_work, oplus_adc_switch_update_work);
-		schedule_delayed_work(&adc_switch_update_work, 0);
+		queue_delayed_work(system_power_efficient_wq, &adc_switch_update_work, 0);
 	}
 	g_oplus_chip->charger_current_pre = -1;
 	oplus_chip->authenticate = oplus_gauge_get_batt_authenticate();

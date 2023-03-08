@@ -2477,7 +2477,7 @@ static irqreturn_t mp2650_acok_handler(int irq, void *dev_id)
 	struct chip_mp2650 *chip = dev_id;
 
 	chg_debug("mps acok irq\n");
-	schedule_delayed_work(&chip->plugin_work, msecs_to_jiffies(5));
+	queue_delayed_work(system_power_efficient_wq, &chip->plugin_work, msecs_to_jiffies(5));
 	return IRQ_HANDLED;
 }
 
@@ -3297,7 +3297,7 @@ static int mp2650_driver_probe(struct i2c_client *client,
 	}
 	chg_info("register %s\n", node->name);
 
-	schedule_delayed_work(&chg_ic->plugin_work, 0);
+	queue_delayed_work(system_power_efficient_wq, &chg_ic->plugin_work, 0);
 
 	chg_info(" success\n");
 

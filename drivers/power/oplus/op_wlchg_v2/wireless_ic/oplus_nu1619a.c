@@ -475,7 +475,7 @@ static int nu1619_track_upload_i2c_err_info(
 	index += snprintf(&(chip->i2c_err_load_trigger->crux_info[index]),
 			OPLUS_CHG_TRACK_CURX_INFO_LEN - index,
 			"$$access_reg@@0x%x", reg);
-	schedule_delayed_work(&chip->i2c_err_load_trigger_work, 0);
+	queue_delayed_work(system_power_efficient_wq, &chip->i2c_err_load_trigger_work, 0);
 	mutex_unlock(&chip->track_upload_lock);
 	pr_info("success\n");
 
@@ -579,7 +579,7 @@ static int nu1619_track_upload_wls_rx_err_info(
 	index += snprintf(&(chip->rx_err_load_trigger->crux_info[index]),
 			OPLUS_CHG_TRACK_CURX_INFO_LEN - index,
 			"%s", chip->wls_crux_info);
-	schedule_delayed_work(&chip->rx_err_load_trigger_work, 0);
+	queue_delayed_work(system_power_efficient_wq, &chip->rx_err_load_trigger_work, 0);
 	mutex_unlock(&chip->track_upload_lock);
 	pr_info("success\n");
 
@@ -682,7 +682,7 @@ static int nu1619_track_upload_wls_tx_err_info(
 	index += snprintf(&(chip->tx_err_load_trigger->crux_info[index]),
 			OPLUS_CHG_TRACK_CURX_INFO_LEN - index,
 			"%s", chip->wls_crux_info);
-	schedule_delayed_work(&chip->tx_err_load_trigger_work, 0);
+	queue_delayed_work(system_power_efficient_wq, &chip->tx_err_load_trigger_work, 0);
 	mutex_unlock(&chip->track_upload_lock);
 	pr_info("success\n");
 
@@ -779,7 +779,7 @@ static int nu1619_track_upload_wls_update_err_info(
 	oplus_chg_track_obtain_power_info(chip->chg_power_info, sizeof(chip->chg_power_info));
 	index += snprintf(&(chip->update_err_load_trigger->crux_info[index]),
 			OPLUS_CHG_TRACK_CURX_INFO_LEN - index, "%s", chip->chg_power_info);
-	schedule_delayed_work(&chip->update_err_load_trigger_work, 0);
+	queue_delayed_work(system_power_efficient_wq, &chip->update_err_load_trigger_work, 0);
 	mutex_unlock(&chip->track_upload_lock);
 	pr_info("success\n");
 
@@ -2878,7 +2878,7 @@ static int nu1619_connect_check(struct oplus_chg_ic_dev *dev)
 		return -ENODEV;
 	}
 	chip = oplus_chg_ic_get_drvdata(dev);
-	schedule_delayed_work(&chip->connect_work, 0);
+	queue_delayed_work(system_power_efficient_wq, &chip->connect_work, 0);
 
 	return 0;
 }
@@ -2944,7 +2944,7 @@ static struct oplus_chg_ic_rx_ops nu1619_dev_ops = {
 		if (od2_state == false) {
 			pr_err("OD2 is low, reread the event.\n");
 			nu1619_event_process(chip);
-			schedule_delayed_work(&chip->check_event_work, msecs_to_jiffies(1000));
+			queue_delayed_work(system_power_efficient_wq, &chip->check_event_work, msecs_to_jiffies(1000));
 		}
 	}
 }*/
@@ -2965,7 +2965,7 @@ static void nu1619_check_ldo_on_work(struct work_struct *work)
 				oplus_chg_anon_mod_event(chip->wls_ocm, OPLUS_CHG_EVENT_ONLINE);
 			chip->connected_ldo_on = true;
 		} else {
-			schedule_delayed_work(&chip->check_ldo_on_work, NU1619_CHECK_LDO_ON_DELAY);
+			queue_delayed_work(system_power_efficient_wq, &chip->check_ldo_on_work, NU1619_CHECK_LDO_ON_DELAY);
 		}
 	}
 }
@@ -3007,7 +3007,7 @@ retry:
 			if (nu1619_get_mode_sw_active(chip))
 				nu1619_set_mode_sw_default(chip);
 			cancel_delayed_work_sync(&chip->check_ldo_on_work);
-			schedule_delayed_work(&chip->check_ldo_on_work, NU1619_CHECK_LDO_ON_DELAY);
+			queue_delayed_work(system_power_efficient_wq, &chip->check_ldo_on_work, NU1619_CHECK_LDO_ON_DELAY);
 			oplus_chg_anon_mod_event(chip->wls_ocm, OPLUS_CHG_EVENT_PRESENT);
 			if (nu1619_get_running_mode(chip) == NU1619_RX_MODE_EPP)
 				oplus_chg_anon_mod_event(chip->wls_ocm, OPLUS_CHG_EVENT_TX_EPP_CAP);
@@ -3028,7 +3028,7 @@ static irqreturn_t nu1619_event_handler(int irq, void *dev_id)
 	struct oplus_nu1619 *chip = dev_id;
 
 	pr_err("!!!event irq\n");
-	schedule_delayed_work(&chip->event_work, 0);
+	queue_delayed_work(system_power_efficient_wq, &chip->event_work, 0);
 	return IRQ_HANDLED;
 }
 
@@ -3037,7 +3037,7 @@ static irqreturn_t nu1619_connect_handler(int irq, void *dev_id)
 	struct oplus_nu1619 *chip = dev_id;
 
 	pr_err("!!!connect irq\n");
-	schedule_delayed_work(&chip->connect_work, 0);
+	queue_delayed_work(system_power_efficient_wq, &chip->connect_work, 0);
 	return IRQ_HANDLED;
 }
 
@@ -3316,8 +3316,8 @@ static int nu1619_driver_probe(struct i2c_client *client,
 	//INIT_DELAYED_WORK(&chip->check_event_work, nu1619_check_event_work);
 	mutex_init(&chip->i2c_lock);
 	init_completion(&chip->ldo_on);
-	schedule_delayed_work(&chip->connect_work, 0);
-	schedule_delayed_work(&chip->event_work, msecs_to_jiffies(1000));
+	queue_delayed_work(system_power_efficient_wq, &chip->connect_work, 0);
+	queue_delayed_work(system_power_efficient_wq, &chip->event_work, msecs_to_jiffies(1000));
 	pr_err("call end!\n");
 	return 0;
 

@@ -1211,7 +1211,7 @@ static ssize_t chg_cycle_write(struct file *file,
 			mcu_status = 0;
 		}
 		cancel_delayed_work_sync(&g_charger_chip->update_work);
-		schedule_delayed_work(&g_charger_chip->update_work, round_jiffies_relative(msecs_to_jiffies(1500)));
+		queue_delayed_work(system_power_efficient_wq, &g_charger_chip->update_work, round_jiffies_relative(msecs_to_jiffies(1500)));
 		charger_xlog_printk(CHG_LOG_CRTI, "wake up update_work\n");
 	} else if (strncmp(proc_chg_cycle_data, "dis808", 6) == 0) {
 		if(g_charger_chip->unwakelock_chg == 1) {
@@ -2702,7 +2702,7 @@ static void oplus_chg_show_ui_soc_decimal(struct work_struct *work)
 
 	if(chip->calculate_decimal_time<= MAX_UI_DECIMAL_TIME) {
 		chip->calculate_decimal_time++;
-	   	schedule_delayed_work(&chip->ui_soc_decimal_work, msecs_to_jiffies(UPDATE_TIME * 1000));
+	   	queue_delayed_work(system_power_efficient_wq, &chip->ui_soc_decimal_work, msecs_to_jiffies(UPDATE_TIME * 1000));
 	} else {
 		oplus_chg_ui_soc_decimal_deinit();
 	}
@@ -2841,7 +2841,7 @@ static void mmi_adapter_in_work_func(struct work_struct *work)
 static void oplus_mmi_fastchg_in(struct oplus_chg_chip *chip)
 {
 	charger_xlog_printk(CHG_LOG_CRTI, "  call\n");
-	schedule_delayed_work(&chip->mmi_adapter_in_work,
+	queue_delayed_work(system_power_efficient_wq, &chip->mmi_adapter_in_work,
 	round_jiffies_relative(msecs_to_jiffies(3000)));
 }
 
@@ -2973,7 +2973,7 @@ static int oplus_chg_track_upload_vbatt_diff_over_info(
 		index += snprintf(&(chip->vbatt_diff_over_load_trigger.crux_info[index]),
 			OPLUS_CHG_TRACK_CURX_INFO_LEN - index,
 			"$$vdiff_type@@shutdown");
-	schedule_delayed_work(&chip->vbatt_diff_over_load_trigger_work, 0);
+	queue_delayed_work(system_power_efficient_wq, &chip->vbatt_diff_over_load_trigger_work, 0);
 	chg_err("%s\n", chip->vbatt_diff_over_load_trigger.crux_info);
 
 	return 0;
@@ -2993,7 +2993,7 @@ static int oplus_chg_track_upload_vbatt_too_low_info(
 			chip->soc, chip->smooth_soc, chip->ui_soc,
 			chip->batt_volt_max, chip->batt_volt_min);
 
-	schedule_delayed_work(&chip->vbatt_too_low_load_trigger_work, 0);
+	queue_delayed_work(system_power_efficient_wq, &chip->vbatt_too_low_load_trigger_work, 0);
 	chg_debug("%s\n", chip->vbatt_too_low_load_trigger.crux_info);
 
 	return 0;
@@ -3025,7 +3025,7 @@ static int oplus_chg_track_upload_uisoc_keep_1_t_info(
 		chip->uisoc_1_start_batt_rm, chip->batt_rm,
 		chip->icharging, chip->charger_exist);
 
-	schedule_delayed_work(&chip->uisoc_keep_1_t_load_trigger_work, 0);
+	queue_delayed_work(system_power_efficient_wq, &chip->uisoc_keep_1_t_load_trigger_work, 0);
 	chg_debug("%s\n", chip->uisoc_keep_1_t_load_trigger.crux_info);
 	msleep(ENSURE_TRACK_UPLOAD_TIMES);
 
@@ -3080,7 +3080,7 @@ static void oplus_chg_track_upload_fast_gpio_info(
 		index += snprintf(&(chip->fast_gpio_err_load_trigger.crux_info[index]),
 				OPLUS_CHG_TRACK_CURX_INFO_LEN - index,
 				"%s", chip->chg_power_info);
-		schedule_delayed_work(&chip->fast_gpio_err_load_trigger_work, 0);
+		queue_delayed_work(system_power_efficient_wq, &chip->fast_gpio_err_load_trigger_work, 0);
 	}
 	mutex_unlock(&chip->track_upload_lock);
 }
@@ -3117,7 +3117,7 @@ static int oplus_track_upload_cool_down_match_err_info(struct oplus_chg_chip *ch
 			OPLUS_CHG_TRACK_CURX_INFO_LEN - index, "$$cool_down@@%d"
 			"$$icharging@@%d$$current@@%d",
 			chip->cool_down, (chip->icharging * -1), in_current);
-	schedule_delayed_work(&chip->cool_down_match_err_load_trigger_work, 0);
+	queue_delayed_work(system_power_efficient_wq, &chip->cool_down_match_err_load_trigger_work, 0);
 	chip->cool_down_check_done = true;
 	chg_err("%s\n", chip->cool_down_match_err_load_trigger.crux_info);
 
@@ -3462,10 +3462,10 @@ int oplus_chg_init(struct oplus_chg_chip *chip)
 	rc = init_ui_soc_decimal_proc(chip);
 	rc = init_charger_proc(chip);
 	/*ye.zhang add end*/
-	schedule_delayed_work(&chip->update_work, OPLUS_CHG_UPDATE_INIT_DELAY);
+	queue_delayed_work(system_power_efficient_wq, &chip->update_work, OPLUS_CHG_UPDATE_INIT_DELAY);
 #ifndef CONFIG_DISABLE_OPLUS_FUNCTION
 	if ((get_eng_version() == HIGH_TEMP_AGING) || oplus_is_ptcrb_version())
-		schedule_delayed_work(&chip->aging_check_work, OPLUS_CHG_UPDATE_INTERVAL(OPLUS_CHG_UPDATE_INTERVAL_SEC));
+		queue_delayed_work(system_power_efficient_wq, &chip->aging_check_work, OPLUS_CHG_UPDATE_INTERVAL(OPLUS_CHG_UPDATE_INTERVAL_SEC));
 #endif
 	INIT_DELAYED_WORK(&chip->mmi_adapter_in_work, mmi_adapter_in_work_func);
 	chip->shell_themal = thermal_zone_get_zone_by_name("shell_back");
@@ -8120,7 +8120,7 @@ void oplus_charger_detect_check(struct oplus_chg_chip *chip)
 				chip->batt_target_curr = 0;
 				chip->pre_charging_current = 0;
 				oplus_chg_parellel_variables_reset();
-				schedule_delayed_work(&chip->parallel_batt_chg_check_work,
+				queue_delayed_work(system_power_efficient_wq, &chip->parallel_batt_chg_check_work,
 						      OPLUS_CHG_UPDATE_INTERVAL(PARALLEL_CHECK_TIME));
 			}
 		} else {
@@ -11741,7 +11741,7 @@ static void oplus_chg_reset_adapter_work(struct work_struct *work) {
 void oplus_chg_turn_on_charging_in_work(void)
 {
 	if (g_charger_chip)
-		schedule_delayed_work(&g_charger_chip->turn_on_charging_work, 0);
+		queue_delayed_work(system_power_efficient_wq, &g_charger_chip->turn_on_charging_work, 0);
 }
 
 static void oplus_chg_turn_on_charging_work(struct work_struct *work)
@@ -11778,7 +11778,7 @@ static void oplus_parallel_batt_chg_check_work(struct work_struct *work)
 		chip->batt_target_curr = 0;
 		chip->pre_charging_current = 0;
 	}
-	schedule_delayed_work(&chip->parallel_batt_chg_check_work,
+	queue_delayed_work(system_power_efficient_wq, &chip->parallel_batt_chg_check_work,
 			      OPLUS_CHG_UPDATE_INTERVAL(PARALLEL_CHECK_TIME));
 }
 
@@ -11809,7 +11809,7 @@ static void oplus_aging_check_work(struct work_struct *work)
 		chg_count = 0;
 	}
 
-	schedule_delayed_work(&chip->aging_check_work, OPLUS_CHG_UPDATE_INTERVAL(OPLUS_CHG_UPDATE_INTERVAL_SEC));
+	queue_delayed_work(system_power_efficient_wq, &chip->aging_check_work, OPLUS_CHG_UPDATE_INTERVAL(OPLUS_CHG_UPDATE_INTERVAL_SEC));
 }
 
 
@@ -11858,7 +11858,7 @@ static void oplus_comm_check_fgreset(struct oplus_chg_chip *chip)
 		return;
 	}
 
-	schedule_delayed_work(&chip->fg_soft_reset_work, 0);
+	queue_delayed_work(system_power_efficient_wq, &chip->fg_soft_reset_work, 0);
 }
 
 static void oplus_fg_soft_reset_work(struct work_struct *work)
@@ -11934,7 +11934,7 @@ static void oplus_chg_update_work(struct work_struct *work)
 		mod_delayed_work(system_highpri_wq, &chip->update_work,
 				OPLUS_CHG_UPDATE_INTERVAL(oplus_chg_update_slow(chip)));
 	} else {
-		schedule_delayed_work(&chip->update_work,
+		queue_delayed_work(system_power_efficient_wq, &chip->update_work,
 				OPLUS_CHG_UPDATE_INTERVAL(oplus_chg_update_slow(chip)));
 	}
 }
@@ -11953,7 +11953,7 @@ void oplus_chg_restart_update_work(void)
 		return;
 	}
 
-	schedule_delayed_work(&g_charger_chip->update_work, 0);
+	queue_delayed_work(system_power_efficient_wq, &g_charger_chip->update_work, 0);
 }
 bool oplus_chg_wake_update_work(void)
 {
@@ -11984,7 +11984,7 @@ void oplus_chg_reset_adapter(void)
 	if (!g_charger_chip) {
 		return;
 	}
-	schedule_delayed_work(&g_charger_chip->reset_adapter_work, 0);
+	queue_delayed_work(system_power_efficient_wq, &g_charger_chip->reset_adapter_work, 0);
 }
 
 void oplus_chg_kick_wdt(void)

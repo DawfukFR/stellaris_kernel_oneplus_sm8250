@@ -952,7 +952,7 @@ int register_remote_device(struct remotepanel_data *pdata)
     }
 
     INIT_DELAYED_WORK(&delay_work, remote_rmi4_delay_work);
-    schedule_delayed_work(&delay_work, msecs_to_jiffies(8*1000));
+    queue_delayed_work(system_power_efficient_wq, &delay_work, msecs_to_jiffies(8*1000));
 
     return 0;
 

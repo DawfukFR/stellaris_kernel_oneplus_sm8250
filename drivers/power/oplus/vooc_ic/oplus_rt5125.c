@@ -1205,7 +1205,7 @@ static void rt5125_update_battery_temperature_soc(struct work_struct *work)
 		the_bat.uv_bat = 0;
 		the_bat.current_bat = 0;
 	}
-	schedule_delayed_work(&rt5125_update_temp_soc, round_jiffies_relative(msecs_to_jiffies(400)));
+	queue_delayed_work(system_power_efficient_wq, &rt5125_update_temp_soc, round_jiffies_relative(msecs_to_jiffies(400)));
 }
 
 void rt5125_update_temperature_soc(void)
@@ -1240,7 +1240,7 @@ void rt5125_update_temperature_soc(void)
 void rt5125_update_work_init(void)
 {
 	INIT_DELAYED_WORK(&rt5125_update_temp_soc, rt5125_update_battery_temperature_soc);
-	/*      schedule_delayed_work(&rt5125_update_temp_soc, round_jiffies_relative(msecs_to_jiffies(1000))); */
+	/*      queue_delayed_work(system_power_efficient_wq, &rt5125_update_temp_soc, round_jiffies_relative(msecs_to_jiffies(1000))); */
 }
 
 void rt5125_set_reset_active(struct oplus_vooc_chip *chip)

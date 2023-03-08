@@ -839,7 +839,7 @@ static void p922x_self_reset(struct oplus_p922x_ic *chip, bool to_BPP)
 {
 	chip->p922x_chg_status.wpc_self_reset = to_BPP;
 	p922x_set_vbat_en_val(1);
-	schedule_delayed_work(&chip->p922x_self_reset_work, round_jiffies_relative(msecs_to_jiffies(1000)));
+	queue_delayed_work(system_power_efficient_wq, &chip->p922x_self_reset_work, round_jiffies_relative(msecs_to_jiffies(1000)));
 }
 
 //static void p922x_read_debug_registers(struct oplus_p922x_ic *chip)
@@ -1051,7 +1051,7 @@ void p922x_set_rtx_function(bool is_on)
 		p922x_chip->p922x_chg_status.wpc_dischg_status = WPC_DISCHG_STATUS_ON;
 
 		//cancel_delayed_work_sync(&p922x_chip->idt_dischg_work);
-		schedule_delayed_work(&p922x_chip->idt_dischg_work, round_jiffies_relative(msecs_to_jiffies(200)));
+		queue_delayed_work(system_power_efficient_wq, &p922x_chip->idt_dischg_work, round_jiffies_relative(msecs_to_jiffies(200)));
 	} else {
 		if (p922x_chip->p922x_chg_status.wpc_dischg_status == WPC_DISCHG_STATUS_OFF) {
 			chg_err("<~WPC~> Rtx function has already disabled!\n");
@@ -1754,7 +1754,7 @@ static int p922x_get_vout(struct oplus_p922x_ic * chip)
 static void p922x_begin_CEP_detect(struct oplus_p922x_ic * chip)
 {
 	chip->p922x_chg_status.CEP_ready = false;
-	schedule_delayed_work(&chip->p922x_CEP_work, P922X_CEP_INTERVAL);
+	queue_delayed_work(system_power_efficient_wq, &chip->p922x_CEP_work, P922X_CEP_INTERVAL);
 }
 
 static void p922x_reset_CEP_flag(struct oplus_p922x_ic * chip)
@@ -3743,7 +3743,7 @@ static void p922x_idt_dischg_status(struct oplus_p922x_ic *chip)
 			chip->p922x_chg_status.tx_online = false;
 			chip->p922x_chg_status.wpc_dischg_status = WPC_DISCHG_IC_READY;
 			rc = p922x_config_interface(chip, 0x76, 0x01, 0xFF);
-			schedule_delayed_work(&chip->idt_dischg_work, 0);
+			queue_delayed_work(system_power_efficient_wq, &chip->idt_dischg_work, 0);
 		} else if (P922X_RTX_DIGITALPING & regdata[0] || P922X_RTX_ANALOGPING & regdata[0]) {
 			chip->p922x_chg_status.tx_online = false;
 			if (WPC_DISCHG_IC_PING_DEVICE == chip->p922x_chg_status.wpc_dischg_status) {
@@ -3756,7 +3756,7 @@ static void p922x_idt_dischg_status(struct oplus_p922x_ic *chip)
 				//oplus_set_wrx_en_value(0);
 			} else {
 				chip->p922x_chg_status.wpc_dischg_status = WPC_DISCHG_IC_PING_DEVICE;
-				schedule_delayed_work(&chip->idt_dischg_work, WPC_DISCHG_WAIT_DEVICE_EVENT);
+				queue_delayed_work(system_power_efficient_wq, &chip->idt_dischg_work, WPC_DISCHG_WAIT_DEVICE_EVENT);
 			}
 		} else if (P922X_RTX_TRANSFER & regdata[0]) {
 			chip->p922x_chg_status.tx_online = true;
@@ -3913,7 +3913,7 @@ static void p922x_commu_data_process(struct oplus_p922x_ic *chip)
 
 	if (p922x_get_idt_int_val() == 0) {
 		chg_err("<~WPC~> INT is 0, clear IRT again!\n");
-		schedule_delayed_work(&p922x_chip->idt_event_int_work, round_jiffies_relative(msecs_to_jiffies(500)));
+		queue_delayed_work(system_power_efficient_wq, &p922x_chip->idt_event_int_work, round_jiffies_relative(msecs_to_jiffies(500)));
 	}
 }
 
@@ -4062,7 +4062,7 @@ static void p922x_idt_connect_int_func(struct work_struct *work)
 			chip->p922x_chg_status.iout_debug_mode = false;
 #endif
 			
-			schedule_delayed_work(&chip->p922x_task_work, round_jiffies_relative(msecs_to_jiffies(100)));
+			queue_delayed_work(system_power_efficient_wq, &chip->p922x_task_work, round_jiffies_relative(msecs_to_jiffies(100)));
 
 			oplus_chg_restart_update_work();
 #ifdef OPLUS_FEATURE_CHG_BASIC
@@ -4110,7 +4110,7 @@ static void p922x_idt_connect_int_func(struct work_struct *work)
 				chg_err("<~WPC~>[-TEST-]charge test > 22s, stop charge!\n");
 				stop_timer = 0;
 				p922x_set_vbat_en_val(1);
-				schedule_delayed_work(&chip->p922x_test_work, round_jiffies_relative(msecs_to_jiffies(1000)));
+				queue_delayed_work(system_power_efficient_wq, &chip->p922x_test_work, round_jiffies_relative(msecs_to_jiffies(1000)));
 			} else {
 				chg_err("<~WPC~>[-TEST-]charge test <= 22s!\n");
 			}
@@ -4131,7 +4131,7 @@ static void p922x_idt_event_shedule_work(void)
 	if (!p922x_chip) {
 		chg_err(" p922x_chip is NULL\n");
 	} else {
-		schedule_delayed_work(&p922x_chip->idt_event_int_work, 0);
+		queue_delayed_work(system_power_efficient_wq, &p922x_chip->idt_event_int_work, 0);
 	}
 }
 
@@ -4140,7 +4140,7 @@ static void p922x_idt_connect_shedule_work(void)
 	if (!p922x_chip) {
 		chg_err(" p922x_chip is NULL\n");
 	} else {
-		schedule_delayed_work(&p922x_chip->idt_connect_int_work, 0);
+		queue_delayed_work(system_power_efficient_wq, &p922x_chip->idt_connect_int_work, 0);
 	}
 }
 
@@ -5538,7 +5538,7 @@ static void p922x_task_work_process(struct work_struct *work)
 		if (idt_disconnect_cnt >= 2) {
 			if (p922x_chip->p922x_chg_status.charge_online) {
 				chg_err("<~WPC~> idt_connect has dispeared. exit wpc\n");
-				schedule_delayed_work(&p922x_chip->idt_connect_int_work, 0);
+				queue_delayed_work(system_power_efficient_wq, &p922x_chip->idt_connect_int_work, 0);
 			}
 		}
 
@@ -5568,11 +5568,11 @@ static void p922x_task_work_process(struct work_struct *work)
 			case WPC_CHG_STATUS_FAST_CHARGING_FROM_CHARGER:
 			case WPC_CHG_STATUS_FTM_WORKING:
 			case WPC_CHG_STATUS_DECREASE_VOUT_FOR_RESTART:
-				schedule_delayed_work(&chip->p922x_task_work, round_jiffies_relative(msecs_to_jiffies(500)));
+				queue_delayed_work(system_power_efficient_wq, &chip->p922x_task_work, round_jiffies_relative(msecs_to_jiffies(500)));
 				break;
 
 			default:
-				schedule_delayed_work(&chip->p922x_task_work, round_jiffies_relative(msecs_to_jiffies(100)));
+				queue_delayed_work(system_power_efficient_wq, &chip->p922x_task_work, round_jiffies_relative(msecs_to_jiffies(100)));
 				break;
 		}
 	}
@@ -5587,7 +5587,7 @@ static void p922x_CEP_work_process(struct work_struct *work)
 	
 	if (p922x_chip->p922x_chg_status.charge_online) {
 		p922x_detect_CEP(chip);
-		schedule_delayed_work(&chip->p922x_CEP_work, P922X_CEP_INTERVAL);
+		queue_delayed_work(system_power_efficient_wq, &chip->p922x_CEP_work, P922X_CEP_INTERVAL);
 	}
 }
 
@@ -5608,7 +5608,7 @@ static void p922x_update_work_process(struct work_struct *work)
 		rc = p922x_check_idt_fw_update(chip);
 		if (rc) {
 			/* run again after interval */
-			;//schedule_delayed_work(&chip->p922x_update_work, P922X_UPDATE_RETRY_INTERVAL);
+			;//queue_delayed_work(system_power_efficient_wq, &chip->p922x_update_work, P922X_UPDATE_RETRY_INTERVAL);
 		}
 	}
 }
@@ -5622,7 +5622,7 @@ static void p922x_self_reset_process(struct work_struct *work)
 		chg_err("<~WPC~> self reset: enable connect again!\n");
 		p922x_set_vbat_en_val(0);
 		if (chip->p922x_chg_status.wpc_self_reset) {
-			schedule_delayed_work(&chip->p922x_self_reset_work, round_jiffies_relative(msecs_to_jiffies(4500)));
+			queue_delayed_work(system_power_efficient_wq, &chip->p922x_self_reset_work, round_jiffies_relative(msecs_to_jiffies(4500)));
 		}
 	} else {
 		chg_err("<~WPC~> self reset: clear wpc_self_reset!\n");
@@ -5649,7 +5649,7 @@ static void p922x_test_work_process(struct work_struct *work)
 		p922x_set_vbat_en_val(0);
 	} else {
 		chg_err("<~WPC~>[-TEST-] keep stop\n");
-		schedule_delayed_work(&chip->p922x_test_work, round_jiffies_relative(msecs_to_jiffies(1000)));
+		queue_delayed_work(system_power_efficient_wq, &chip->p922x_test_work, round_jiffies_relative(msecs_to_jiffies(1000)));
 	}
 }
 #endif
@@ -7371,7 +7371,7 @@ static int p922x_driver_probe(struct i2c_client *client, const struct i2c_device
 
 	p922x_chip = chip;
 
-	schedule_delayed_work(&chip->p922x_update_work, P922X_UPDATE_INTERVAL);
+	queue_delayed_work(system_power_efficient_wq, &chip->p922x_update_work, P922X_UPDATE_INTERVAL);
 
 	if (g_oplus_chip && !g_oplus_chip->charger_exist)
 		p922x_idt_connect_shedule_work();

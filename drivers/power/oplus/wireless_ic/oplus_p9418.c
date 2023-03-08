@@ -1090,7 +1090,7 @@ static void p9418_commu_data_process(struct oplus_p9418_ic *chip)
 		chip->present = 1;
 		notify_pen_state(1);
 		check_int_enable(chip);
-		schedule_delayed_work(&chip->check_point_dwork, round_jiffies_relative(msecs_to_jiffies(50)));
+		queue_delayed_work(system_power_efficient_wq, &chip->check_point_dwork, round_jiffies_relative(msecs_to_jiffies(50)));
 		chg_err("p9418 ss int ,present value :%d.\n", chip->present);
 	}
 
@@ -1529,7 +1529,7 @@ static void p9418_do_switch(struct oplus_p9418_ic *chip, uint8_t status)
 		chip->power_enable_reason = PEN_REASON_NEAR;
 		chip->tx_start_time = ktime_to_ms(ktime_get());
 		schedule_work(&idt_timer_work);
-		schedule_delayed_work(&chip->power_check_work, \
+		queue_delayed_work(system_power_efficient_wq, &chip->power_check_work, \
 						round_jiffies_relative(msecs_to_jiffies(chip->power_expired_time * MIN_TO_MS)));
 	} else if (status == PEN_STATUS_FAR) {/* hall far, power off */
 		p9418_power_enable(chip, false);
@@ -1627,7 +1627,7 @@ static void p9418_enable_func(struct work_struct *work)
 	chip->tx_start_time = ktime_to_ms(ktime_get());
 	schedule_work(&idt_timer_work);
 	cancel_delayed_work(&chip->power_check_work);
-	schedule_delayed_work(&chip->power_check_work, \
+	queue_delayed_work(system_power_efficient_wq, &chip->power_check_work, \
 					round_jiffies_relative(msecs_to_jiffies(chip->power_expired_time * MIN_TO_MS)));
 
 OUT:
@@ -1857,7 +1857,7 @@ static void p9418_update_work_process(struct work_struct *work)
 	rc = p9418_check_idt_fw_update(chip);
 	if (rc == -1) {
 		/* run again after interval */
-		schedule_delayed_work(&chip->p9418_update_work, P9418_UPDATE_RETRY_INTERVAL);
+		queue_delayed_work(system_power_efficient_wq, &chip->p9418_update_work, P9418_UPDATE_RETRY_INTERVAL);
 	}
 }
 
@@ -2302,7 +2302,7 @@ static int p9418_driver_probe(struct i2c_client *client, const struct i2c_device
 	p9418_chip = chip;
 	mutex_init(&chip->flow_mutex);
 
-	schedule_delayed_work(&chip->p9418_update_work, P9418_UPDATE_INTERVAL);
+	queue_delayed_work(system_power_efficient_wq, &chip->p9418_update_work, P9418_UPDATE_INTERVAL);
 	rc = blocking_notifier_chain_register(&hall_notifier, &p9418_notifier);
 	if (rc < 0) {
 		chg_err("blocking_notifier_chain_register error");

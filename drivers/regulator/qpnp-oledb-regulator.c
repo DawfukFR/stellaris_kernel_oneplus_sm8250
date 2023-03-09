@@ -1363,9 +1363,7 @@ static int qpnp_oledb_regulator_probe(struct platform_device *pdev)
 	oledb->base = val;
 	rc = qpnp_oledb_parse_dt(oledb);
 	if (rc < 0) {
-		pr_err("Failed to parse common OLEDB device tree\n");
-		return rc;
-	}
+		return dev_err_probe(&pdev->dev, rc, "Failed to parse dt rc=%d\n");
 
 	rc = qpnp_oledb_hw_init(oledb);
 	if (rc < 0) {

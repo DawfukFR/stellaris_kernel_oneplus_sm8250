@@ -671,6 +671,7 @@ static struct spi_driver synaptics_rmi4_spi_driver = {
 		.name = SPI_DRIVER_NAME,
 		.owner = THIS_MODULE,
 		.of_match_table = synaptics_rmi4_of_match_table,
+		.probe_type = PROBE_PREFER_ASYNCHRONOUS,
 	},
 	.probe = synaptics_rmi4_spi_probe,
 	.remove = synaptics_rmi4_spi_remove,

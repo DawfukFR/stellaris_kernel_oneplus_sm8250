@@ -2079,6 +2079,7 @@ static struct spi_driver tp_spi_driver = {
         .name    = DEVICE_ID,
         .owner = THIS_MODULE,
         .of_match_table = tp_match_table,
+		.probe_type = PROBE_PREFER_ASYNCHRONOUS,
         .pm = &tp_pm_ops,
     },
     .probe = ilitek_platform_probe,

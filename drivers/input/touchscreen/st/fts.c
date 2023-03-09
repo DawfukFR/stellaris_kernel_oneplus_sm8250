@@ -5102,6 +5102,7 @@ static struct i2c_driver fts_i2c_driver = {
 	.driver = {
 		.name = FTS_TS_DRV_NAME,
 		.of_match_table = fts_of_match_table,
+		.probe_type = PROBE_PREFER_ASYNCHRONOUS,
 	},
 	.probe = fts_probe,
 	.remove = fts_remove,

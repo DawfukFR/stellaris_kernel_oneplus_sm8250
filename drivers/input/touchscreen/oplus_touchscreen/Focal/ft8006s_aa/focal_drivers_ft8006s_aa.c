@@ -2510,6 +2510,7 @@ static struct spi_driver tp_spi_driver = {
         .driver         = {
                 .name   = TPD_DEVICE,
                 .of_match_table =  tp_match_table,
+		        .probe_type = PROBE_PREFER_ASYNCHRONOUS,
                 .pm = &tp_pm_ops,
         },
 };

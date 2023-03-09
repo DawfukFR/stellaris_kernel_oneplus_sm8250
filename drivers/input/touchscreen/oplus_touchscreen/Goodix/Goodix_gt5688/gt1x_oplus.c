@@ -2519,6 +2519,7 @@ static struct i2c_driver gt1x_ts_driver = {
         .name = GTP_I2C_NAME,
         .owner = THIS_MODULE,
         .of_match_table = gt1x_match_table,
+		.probe_type = PROBE_PREFER_ASYNCHRONOUS,
 #if defined(CONFIG_FB)
         .pm = &gt1x_ts_pm_ops,
 #endif

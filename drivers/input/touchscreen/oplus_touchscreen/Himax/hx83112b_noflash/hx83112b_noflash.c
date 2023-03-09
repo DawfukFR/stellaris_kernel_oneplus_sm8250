@@ -7161,6 +7161,7 @@ static struct spi_driver hx83112b_nf_common_driver = {
         .name = TPD_DEVICE,
         .owner = THIS_MODULE,
         .of_match_table = hx83112b_nf_match_table,
+		.probe_type = PROBE_PREFER_ASYNCHRONOUS,
         .pm = &hx83112b_nf_pm_ops,
     },
 };

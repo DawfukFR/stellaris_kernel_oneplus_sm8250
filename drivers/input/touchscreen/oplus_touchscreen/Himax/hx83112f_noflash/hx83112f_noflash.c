@@ -7330,6 +7330,7 @@ static struct spi_driver himax_common_driver = {
         .name = TPD_DEVICE,
         .owner = THIS_MODULE,
         .of_match_table = tp_match_table,
+		.probe_type = PROBE_PREFER_ASYNCHRONOUS,
         .pm = &tp_pm_ops,
     },
 };

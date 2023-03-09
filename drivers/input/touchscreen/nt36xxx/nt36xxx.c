@@ -1944,6 +1944,7 @@ static struct i2c_driver nvt_i2c_driver = {
 		.name	= NVT_I2C_NAME,
 #ifdef CONFIG_OF
 		.of_match_table = nvt_match_table,
+		.probe_type = PROBE_PREFER_ASYNCHRONOUS,
 #endif
 	},
 };

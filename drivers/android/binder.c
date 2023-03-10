@@ -6914,6 +6914,7 @@ int binder_state_show(struct seq_file *m, void *unused)
 
 	return 0;
 }
+#endif
 
 #ifdef OPLUS_FEATURE_HANS_FREEZE
 static void hans_check_uid_proc_status(struct binder_proc *proc, enum message_type type)
@@ -6980,6 +6981,7 @@ void hans_check_frozen_transcation(uid_t uid, enum message_type type)
 }
 #endif /*OPLUS_FEATURE_HANS_FREEZE*/
 
+#ifdef CONFIG_ANDROID_BINDER_LOGS
 int binder_stats_show(struct seq_file *m, void *unused)
 {
 	struct binder_proc *proc;

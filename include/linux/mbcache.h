@@ -35,6 +35,7 @@ struct mb_cache_entry {
 	unsigned long		e_flags;
 	/* User provided value - stable during lifetime of the entry */
 	u64			e_value;
+	u32			e_reusable:1;
 };
 
 struct mb_cache *mb_cache_create(int bucket_bits);

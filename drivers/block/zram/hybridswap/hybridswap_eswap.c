@@ -4152,7 +4152,9 @@ int hybridswap_bind(struct zram *zram, const char *file_name)
 	}
 
 	zram->bdev = bdev;
+#ifdef CONFIG_ZRAM_WRITEBACK
 	zram->backing_dev = backing_dev;
+#endif
 	zram->nr_pages = nr_pages;
 	return 0;
 

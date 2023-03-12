@@ -192,10 +192,7 @@ ifeq ($(CONFIG_BUILD_ARM64_DT_OVERLAY),y)
 $(KBUILD_DTBO_IMG): dtbs
 	$(Q)$(MAKE) $(build)=$(boot) $(boot)/$@
 
-anykernel: Image.gz dtb $(KBUILD_DTBO_IMG)
-	$(Q)$(MAKE) $(build)=anykernel
-
-all: $(KBUILD_DTBO_IMG) anykernel
+all: $(KBUILD_DTBO_IMG)
 endif
 
 PHONY += vdso_install
@@ -208,7 +205,6 @@ vdso_install:
 archclean:
 	$(Q)$(MAKE) $(clean)=$(boot)
 	$(Q)$(MAKE) $(clean)=$(boot)/dts
-	$(Q)$(MAKE) $(clean)=anykernel
 
 ifeq ($(KBUILD_EXTMOD),)
 # We need to generate vdso-offsets.h before compiling certain files in kernel/.
